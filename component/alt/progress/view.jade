@@ -1,0 +1,3 @@
+div(class="progress progress-{{ altProgress.type }} active")
+    div(data-ng-repeat="bar in altProgress.bars", class="bar bar-{{ bar.type }}", data-ng-style="{width: bar.value + '%'}")
+        | {{ bar.value }}%

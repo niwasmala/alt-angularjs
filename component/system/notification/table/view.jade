@@ -1,0 +1,29 @@
+link(rel="stylesheet", href="asset/css/ng-table.min.css")
+div(class="row-fluid", data-ng-show="setting.isfilter")
+    div(class="span12")
+        div(data-alt-filter="setting.filter", data-table="setting.table", data-setting="filtersetting")
+            form(class="form-horizontal")
+                div(class="control-group")
+                    label(for="message", class="control-label") Konten
+                    div(class="controls")
+                        input(type="text", class="input-block-level", data-ng-model="filter.message")
+                div(class="control-group")
+                    label(for="message", class="control-label") Tipe
+                    div(class="controls")
+                        select(class="input-block-level", data-ng-model="filter.type", data-ng-options="k as v for (k,v) in alt.registry.notification_type")
+
+div(id="{{ elementid }}")
+    table(class="table table-bordered table-hover table-striped", data-ng-table="setting.table")
+        thead
+            tr
+                th(style="width: 60px; text-align: center;") No
+                th Tipe
+                th Konten
+                th Aksi
+        tr(data-ng-repeat="data in setting.table.data")
+            td {{ data.no }}
+            td {{ alt.registry.notification_type[data.type] }}
+            td {{ data.message }}
+            td(style="text-align: center; width: {{ buttons.length * 45 }}px;", data-ng-init="buttons = setting.buttons(data)")
+                div(class="btn-group", data-ng-repeat="b in buttons")
+                    div(data-alt-button="b")

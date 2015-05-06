@@ -1,0 +1,7 @@
+div(class="accordion-group")
+    div(class="accordion-heading", style="background:#F3F3F3")
+        strong(class="accordion-toggle", data-toggle="collapse", data-ng-click="$controller.select(this)")
+            | {{ title }} &nbsp;
+            i(data-ng-class="{true:'icon-caret-down', false:'icon-caret-right'}[selected]")
+    div(class="accordion-body {{ selected ? '' : 'collapse' }}")
+        div(class="accordion-inner", data-ng-class="class", style="{{ style }}", data-ng-transclude)

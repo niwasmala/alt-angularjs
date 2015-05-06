@@ -1,0 +1,13 @@
+div(class="tabbable")
+    ul(class="nav nav-tabs")
+        li(data-ng-repeat="s in steps", data-ng-class="{active: s.selected}")
+            a(href="javascript:;", data-ng-click="click($index, s)")
+                span(class="badge", data-ng-class="{'badge-success':s.finished, 'badge-info':s.selected, 'badge-warning':s.showed}") {{$index + 1}}. {{ s.title }}
+
+    div(class="tab-content")
+        div(data-ng-transclude)
+        div(data-ng-if="wizard.button && steps[currentStep].button && steps[currentStep].buttonstart && currentStep == 0", data-alt-button="btnstart")
+        div(data-ng-if="wizard.button && steps[currentStep].button && currentStep > 0", data-alt-button="btnprev")
+        div(data-ng-if="wizard.button && steps[currentStep].button && ((currentStep > 0 && currentStep < steps.length-1) || (currentStep == 0 && steps[currentStep].buttonnext))", data-alt-button="btnnext")
+        div(data-ng-if="wizard.button && steps[currentStep].button && steps[currentStep].buttonfinish && currentStep == steps.length-1", data-alt-button="btnfinish")
+

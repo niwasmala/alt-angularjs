@@ -1,0 +1,5 @@
+ul(class="breadcrumb")
+    li(data-ng-repeat="crumb in altBreadcrumbs", class="{{ crumb.class }}")
+        a(data-ng-if="crumb.class != 'active' && !!crumb.href", data-ng-href="{{ crumb.href || 'javascript:;' }}") {{ crumb.title }}
+        span(data-ng-if="crumb.class == 'active' || !crumb.href") {{ crumb.title }}
+        span(class="divider", data-ng-show="!$last") /

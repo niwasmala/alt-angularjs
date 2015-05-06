@@ -1,0 +1,30 @@
+div(data-alt-breadcrumbs="breadcrumbs")
+div(data-alt-toolbar="'Ubah Password'", data-icon="'icon-user'")
+    div(data-alt-button="back", data-ng-if="isadmin")
+    div(data-alt-button="save")
+div(class="row-fluid")
+    div(class="span12")
+        form(role="form", class="form-horizontal", name="form", data-ng-submit="detail.save()")
+            div(class="control-group")
+                label(for="username", class="control-label") Username
+                div(class="controls")
+                    input(type="text", class="span10", id="username", name="username", data-ng-model="user.username", disabled)
+
+            div(class="control-group", data-ng-class="{error : !$validate.required(user.oldpassword)}", data-ng-hide="isadmin")
+                label(for="oldpassword", class="control-label") Password Lama
+                div(class="controls")
+                    input(type="password", class="span10", id="oldpassword", name="oldpassword", data-ng-model="user.oldpassword", required)
+                    span(class="help-inline", data-ng-show="!$validate.required(user.oldpassword)" ) * harus diisi
+
+            div(class="control-group", data-ng-class="{error : !$validate.required(user.newpassword)}")
+                label(for="newpassword", class="control-label") Password Baru
+                div(class="controls")
+                    input(type="password", class="span10", id="newpassword", name="newpassword", data-ng-model="user.newpassword", required)
+                    span(class="help-inline", data-ng-show="!$validate.required(user.newpassword)" ) * harus diisi
+
+            div(class="control-group", data-ng-class="{error : !$validate.required(user.newpassword2) || !$validate.equals(user.newpassword, user.newpassword2)}")
+                label(for="newpassword2", class="control-label") Password Baru Lagi
+                div(class="controls")
+                    input(type="password", class="span10", id="newpassword2", name="newpassword2", data-ng-model="user.newpassword2", required)
+                    span(class="help-inline", data-ng-show="!$validate.required(user.newpassword2)" ) * harus diisi
+                    span(class="help-inline", data-ng-show="$validate.required(user.newpassword2) && !$validate.equals(user.newpassword, user.newpassword2)" ) * password tidak sama

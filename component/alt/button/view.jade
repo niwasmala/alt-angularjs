@@ -1,0 +1,6 @@
+| &nbsp;&nbsp;
+input(data-ng-if="altButton.type == 'submit'", type="submit", data-ng-class="altButton.class || 'btn btn-primary'", value="{{ altButton.title }}", data-ng-click="altButton.click()", data-ng-disabled="altButton.disabled || altButton.isclicked")
+a(data-ng-if="altButton.type != 'submit'", data-ng-class="altButton.class || 'btn btn-primary'", type="button", title="{{ altButton.description }}", data-ng-click="altButton.click()", data-ng-href="{{ altButton.href }}", data-ng-disabled="altButton.disabled || altButton.isclicked")
+    i(data-ng-class="altButton.icon")
+    span(data-ng-if="altButton.title != '' && altButton.icon != ''") &nbsp;
+    | {{ altButton.title }}

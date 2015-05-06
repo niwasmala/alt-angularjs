@@ -1,0 +1,1 @@
+<ul class="breadcrumb"><li data-ng-repeat="crumb in altBreadcrumbs" class="{{ crumb.class }}"><a data-ng-if="crumb.class != 'active' &amp;&amp; !!crumb.href" data-ng-href="{{ crumb.href || 'javascript:;' }}">{{ crumb.title }}</a><span data-ng-if="crumb.class == 'active' || !crumb.href">{{ crumb.title }}</span><span data-ng-show="!$last" class="divider">/</span></li></ul>
