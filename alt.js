@@ -3,7 +3,7 @@ var alt = angular.module('Alt', ['ngRoute', 'angular-jwt']);
 // environment
 alt.application = 'alt';
 alt.environment = 'production';
-alt.version = '2.1.0';
+alt.version = '1.1.1';
 alt.urlArgs = '';
 alt.language = 'id';
 alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
@@ -18,7 +18,7 @@ alt.extend = function(src, dst){
         value = typeof value === 'undefined' || value == null ? {} : value;
         switch(typeof value){
             case "object":
-                dst[key] = angular.isScope(value) ? value : (Object.prototype.toString.call(value) === '[object Array]' ? (dst[key] || value) : alt.extend(src[key], dst[key]));
+                dst[key] = Object.prototype.toString.call(value) === '[object Array]' ? (dst[key] || value) : alt.extend(src[key], dst[key]);
                 break;
             default:
                 dst[key] = typeof dst[key] !== 'undefined' && dst[key] != angular.noop ? dst[key] : value;
