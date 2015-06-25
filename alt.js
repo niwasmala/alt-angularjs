@@ -9,6 +9,28 @@ alt.language = 'id';
 alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
 alt.dictionary = {};
 
+// extend function
+alt.extend = function(src, dst){
+    src = typeof src === 'undefined' || src == null ? {} : src;
+    dst = typeof dst === 'undefined' || dst == null ? (Object.prototype.toString.call(src) === '[object Array]' ? [] : {}) : dst;
+
+    angular.forEach(src, function(value, key){
+        value = typeof value === 'undefined' || value == null ? {} : value;
+        switch(typeof value){
+            case "object":
+                dst[key] = angular.isScope(value) ? value : (Object.prototype.toString.call(value) === '[object Array]' ? (dst[key] || value) : alt.extend(src[key], dst[key]));
+                break;
+            default:
+                dst[key] = typeof dst[key] !== 'undefined' && dst[key] != angular.noop ? dst[key] : value;
+                break;
+        }
+    });
+    return dst;
+};
+
+// object registry
+alt.registry = {};
+
 // configuring angular module
 alt.config([
     '$locationProvider', '$compileProvider', '$controllerProvider', '$filterProvider', '$logProvider', '$provide', '$routeProvider', '$httpProvider',
