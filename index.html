@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html id="ng-app" ng-app="Alt" xmlns:ng="http://angularjs.org">
+<head lang="en">
+    <meta charset="utf-8">
+    <title>Alt :: Demo Application</title>
+    <link type="text/css" rel="stylesheet" media="all" href="asset/lib/bootstrap2.3.2/bootstrap/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" media="all" href="asset/lib/bootstrap2.3.2/bootstrap/css/bootstrap-responsive.min.css">
+    <link type="text/css" rel="stylesheet" media="all" href="asset/lib/fontawesome/css/font-awesome.min.css">
+    <link type="text/css" rel="stylesheet" media="all" href="asset/css/style.css">
+    <link rel="shortcut icon" href="favicon.ico">
+    <style type="text/css">.ng-cloak{ display: none !important; }</style>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top ng-cloak">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <div data-ng-include="menuLocation" class="nav-collapse collapse"></div>
+                <div style="opacity: 0; z-index: 999; -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)'; filter: alpha(opacity=0);" data-ng-show="menu.submenu != ''" data-ng-click="menu.submenu = ''" class="modal-backdrop fade in"></div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div style="position:absolute; top: 40px; right: 10px; width: 30%; z-index: 999;">
+            <div data-ng-repeat="toast in $toast.items.slice().reverse()">
+                <div data-alt-toast="toast">
+                    <div data-ng-bind-html-unsafe="toast.message"></div>
+                </div>
+            </div>
+        </div>
+        <div style="position:fixed; top: 40px; left: 30%; width: 40%; z-index: 998;">
+            <div data-ng-repeat="alert in $alert.items">
+                <div data-alt-alert="alert">
+                    <div data-ng-bind-html-unsafe="alert.message"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div data-ng-view></div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        if(!window.atob && !window.btoa){
+            var s = document.createElement('script');
+            s.setAttribute('type', 'text/javascript');
+            s.setAttribute('src', 'asset/js/base64.js');
+            document.getElementsByTagName('body')[0].appendChild(s);
+        }
+
+    </script>
+    <script type="text/javascript" src="asset/lib/store2/dist/store2.min.js"></script>
+    <script type="text/javascript" src="asset/lib/requirejs/require.js"></script>
+    <script type="text/javascript" src="asset/lib/angular/angular.min.js"></script>
+    <script type="text/javascript" src="asset/lib/angular-route/angular-route.min.js"></script>
+    <script type="text/javascript" src="asset/lib/angular-jwt/dist/angular-jwt.min.js"></script>
+    <script type="text/javascript" src="alt.js"></script>
+    <script type="text/javascript">
+        alt.environment = 'development';
+        alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
+    </script>
+    <script type="text/javascript">requirejs.config({urlArgs: alt.urlArgs});</script>
+</body>
+</html>

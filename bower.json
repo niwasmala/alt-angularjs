@@ -1,0 +1,36 @@
+{
+  "name": "alt-angularjs-1.0.0",
+  "version": "1.0.0",
+  "homepage": "https://github.com/niwasmala/alt-angularjs",
+  "authors": [
+    "Nicky Irawan <niwasmala@gmail.com>"
+  ],
+  "description": "AltJS using Angular",
+  "main": "./alt.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "Alt"
+  ],
+  "license": "Apache",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.1",
+    "angular-route": "~1.4.1",
+    "angular-jwt": "~0.0.9",
+    "store2": "~2.3.0",
+    "requirejs": "~2.1.18",
+    "requirejs-plugins": "~1.0.3"
+  },
+  "devDependencies": {
+    "bootstrap2.3.2": "~2.3.2",
+    "fontawesome": "~4.3.0"
+  }
+}
