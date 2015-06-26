@@ -358,6 +358,8 @@ alt.component = function(config){
                 controller: config.controller,
                 compile: config.compile,
                 link: function($scope, $element, $attrs, $controller){
+                    $scope.$component = config.name;
+                    $scope.$name = $attrs[config.name];
                     $scope.alt = alt;
                     var $injector = angular.element(document.getElementsByTagName('body')[0]).injector(),
                         i = 0,
