@@ -333,7 +333,6 @@ alt.components = {};
 alt.component = function(config){
     if(typeof config.name === 'undefined') throw Error('Component must have a name!');
     if(typeof alt.components[config.name] === 'undefined'){
-        config.isskip = config.isskip == null ? null : (typeof config.isskip !== 'undefined' ? config.isskip : true);
         config.require = config.require == null ? null : (config.require || null);
         config.restrict = config.restrict == null ? null : (config.restrict || 'A');
         config.replace = config.replace == null ? null : (config.replace || false);
@@ -359,30 +358,6 @@ alt.component = function(config){
                 controller: config.controller,
                 compile: config.compile,
                 link: function($scope, $element, $attrs, $controller){
-                    var name = '',
-                        scopes = [];
-
-                    for(var i in config.scope) if(config.scope.hasOwnProperty(i)){
-                        if(config.scope[i].substr(0, 1) == '=') scopes.push(i);
-
-                        if(i == config.name){
-                            name = i;
-                            break;
-                        }else{
-                            var tmp = (config.scope[i] || '').replace('=', '').replace('&', '').replace('?', '').replace('@', '');
-                            if(tmp == config.name){
-                                name = i;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(name != '' && !config.isskip && (!$scope.hasOwnProperty(name) || typeof $scope[name] === 'undefined')) return;
-
-                    if(!config.isskip) for(var i=0; i<scopes.length; i++){
-                        if(typeof $scope[scopes[i]] === 'undefined') return;
-                    }
-
                     $scope.alt = alt;
                     var $injector = angular.element(document.getElementsByTagName('body')[0]).injector(),
                         i = 0,
