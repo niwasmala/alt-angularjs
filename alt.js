@@ -119,7 +119,7 @@ alt.config([
                     load: [
                         '$q', '$route', '$timeout', '$auth', '$log', 'jwtHelper', '$api','$window', '$rootScope',
                         function ($q, $route, $timeout, $auth, $log, jwtHelper, $api, $window, $rootScope){
-                            var onRouteChanged = $rootScope.onRouteChanged(),
+                            var onRouteChanged = $rootScope.onRouteChanged($route.current.params),
                                 deferred = $q.defer(),
                                 routeParams = $route.current.params,
                                 $scope = angular.element(document.getElementsByTagName('body')[0]).scope();
@@ -127,7 +127,7 @@ alt.config([
                             onRouteChanged.then(function(){
                                 $scope.view = alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'view.html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
                                 require([
-                                    alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'controller' + (alt.environment == 'production' ? '.min' : '')
+                                    alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'controller'
                                 ], function (controller) {
                                     $scope.controller = controller;
                                     $scope.$apply(function() {
@@ -471,21 +471,33 @@ alt.factory('$api', ['$http', '$log', function($http, $log){
 
 // local storage service
 alt.factory('$storage', ['$log', '$q', function($log, $q){
-    // set default local data
-    store.set(alt.application + '_data', store.get(alt.application + '_data') || {});
-
     return function(table, pk){
         pk = pk || table + 'id';
 
-        return {
+        // set default local data
+        store.set(alt.application + '_data', store.get(alt.application + '_data') || {});
+
+        var $storage = {
             table: table,
             pk: pk,
-            list: function(){
+
+            // response
+            response: function(data, status){
+                status = status || 0;
+                return {
+                    status: status,
+                    data: status == 0 ? data : null,
+                    message: status != 0 ? data : ''
+                };
+            },
+
+            // primitive function for get and save data
+            get: function(){
                 var data = store.get(alt.application + '_data');
                 var res = data[table] || [];
 
                 var deferred = $q.defer();
-                deferred.resolve(res);
+                deferred.resolve($storage.response(res));
                 return deferred.promise;
             },
             save: function(data){
@@ -494,97 +506,154 @@ alt.factory('$storage', ['$log', '$q', function($log, $q){
                 store.set(alt.application + '_data', alldata);
 
                 var deferred = $q.defer();
-                deferred.resolve(1);
+                deferred.resolve($storage.response(1));
                 return deferred.promise;
             },
+
+            // crud function supported
+            list: function(){
+                return $storage.get();
+            },
             search: function(key, value){
-                var data = this.list(table);
-                var isfound = false;
-                var res = {
-                    id: -1,
-                    data: null
-                };
-
-                for(var i=0; i<data.length; i++){
-                    isfound = isfound || data[i][key] == value;
-                    if(isfound){
-                        res.id = i;
-                        res.data = data[i];
-                        break;
-                    }
-                }
-
                 var deferred = $q.defer();
-                deferred.resolve(res);
+
+                $storage.list(table).then(function(response){
+                    var data = response.data;
+                    var res = {
+                        id: -1,
+                        data: null
+                    };
+
+                    for(var i=0; i<data.length; i++){
+                        if(data[i][key] == value){
+                            res.id = i;
+                            res.data = data[i][key];
+                            break;
+                        }
+                    }
+
+                    if(res.id == -1){
+                        deferred.reject($storage.response('Data tidak ditemukan', res.id));
+                    }else{
+                        deferred.resolve($storage.response(res));
+                    }
+                });
                 return deferred.promise;
             },
             count: function(){
-                var data = this.list(table);
-                var res = data.length;
-
                 var deferred = $q.defer();
-                deferred.resolve(res);
+
+                $storage.list(table).then(function(response) {
+                    var data = response.data;
+                    var res = data.length;
+
+                    deferred.resolve($storage.response(res));
+                });
+
                 return deferred.promise;
             },
             insert: function(row){
-                var data = this.list(table);
-                row[pk] = parseInt(data[data.length-1] ? data[data.length-1][pk] || 0 : 0) + 1;
-                data.push(row);
-                return this.save(data);
+                var deferred = $q.defer();
+
+                $storage.list(table).then(function(response) {
+                    var data = response.data;
+                    row[pk] = parseInt(data[data.length-1] ? data[data.length-1][pk] || 0 : 0) + 1;
+                    data.push(row);
+
+                    $storage.save(data).then(function(){
+                        deferred.resolve($storage.response(res));
+                    });
+                });
+
+                return deferred.promise;
             },
             retrieve: function(index){
-                var row = this.search(pk, index),
-                    res = row.data;
-
                 var deferred = $q.defer();
-                deferred.resolve(res);
+
+                $storage.search(pk, index).then(function(response){
+                    var row = response.data,
+                        res = row.data;
+
+                    deferred.resolve($storage.response(res));
+                }, function(response){
+                    deferred.reject($storage.response(response));
+                });
+
                 return deferred.promise;
             },
             update: function(newdata){
-                var data = this.list(table);
-                var row = this.search(pk, newdata[pk]);
-                data[row.id] = newdata;
-                return this.save(data);
+                var deferred = $q.defer();
+
+                $storage.list().then(function(response){
+                    var data = response.data;
+
+                    $storage.search(pk, newdata[pk]).then(function(response){
+                        var row = response.data;
+
+                        data[row.id] = newdata;
+                        $storage.save(data).then(function(){
+                            deferred.resolve($storage.response(1));
+                        });
+                    }, function(response){
+                        deferred.reject($storage.response('Tidak ada data yang diupdate', -1));
+                    });
+                });
+
+                return deferred.promise;
             },
             remove: function(id){
-                var all = this.list(),
-                    data = this.search(pk, id);
+                var deferred = $q.defer();
 
-                if(data.id == -1){
-                    var deferred = $q.defer();
-                    deferred.reject(res);
-                    return deferred.promise;
-                }else{
-                    all.splice(data.id, 1);
-                    return this.save(all);
-                }
+                $storage.list().then(function(response){
+                    var data = response.data;
+
+                    $storage.search(pk, newdata[pk]).then(function(response){
+                        var row = response.data;
+
+                        data.splice(row.id, 1);
+                        $storage.save(data).then(function(){
+                            deferred.resolve($storage.response(1));
+                        });
+                    }, function(response){
+                        deferred.reject($storage.response('Tidak ada data yang dihapus', -1));
+                    });
+                });
             },
             keyvalues: function(key, value){
                 value = value || '';
 
-                var data = this.list(table);
-                var res = {};
-                for(var i=0; i<data.length; i++){
-                    res[data[i][key]] = value != '' ? data[i][value] : data[i];
-                }
-
                 var deferred = $q.defer();
-                deferred.resolve(res);
+
+                $storage.list(table).then(function(response){
+                    var data = response.data;
+                    var res = {};
+                    for(var i=0; i<data.length; i++){
+                        res[data[i][key]] = value != '' ? data[i][value] : data[i];
+                    }
+
+                    deferred.resolve(res);
+                });
+
                 return deferred.promise;
             },
             isexist: function(key, value){
-                var data = this.list();
-                var res = 0;
-
-                for(var i=0; i<data.length; i++){
-                    res += data[i][key] == value ? 1 : 0;
-                }
-
                 var deferred = $q.defer();
-                deferred.resolve(res);
+
+                $storage.list().then(function(response){
+                    var data = response.data;
+                    var res = 0;
+
+                    for(var i=0; i<data.length; i++){
+                        res += data[i][key] == value ? 1 : 0;
+                    }
+                    deferred.resolve(res);
+                });
+
                 return deferred.promise;
             }
         };
+
+        return $storage;
     };
 }]);
 
@@ -675,7 +744,7 @@ alt.factory('$export', ['$log', function($log){
         },
         print: function(html, css){
             html = html || '';
-            css = css || '<link type="text/css" rel="stylesheet" media="all" href="asset/css/bootstrap.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/bootstrap-responsive.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/style.min.css"/>';
+            css = css || '<link type="text/css" rel="stylesheet" media="all" href="asset/lib/bootstrap2.3.2/bootstrap/css/bootstrap.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/bootstrap-responsive.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/style.css"/>';
             var win = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
             win.document.write(css);
             win.document.write(html);
