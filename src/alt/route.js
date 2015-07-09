@@ -34,12 +34,34 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                     require([
                                         alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'controller'
                                     ], function (controller) {
+                                        // replace controller function, dom is not loaded yet
+                                        var fn = controller[controller.length-1];
+                                        controller[controller.length-1] = function(){
+                                            var self = this,
+                                                args = arguments,
+                                                $scope;
+
+                                            for(var i=0; i<controller.length; i++){
+                                                if(controller[i] == '$scope'){
+                                                    $scope = arguments[i];
+                                                    break;
+                                                }
+                                            }
+
+                                            if($scope){
+                                                $scope.onready = function(){
+                                                    fn.apply(self, args);
+                                                };
+                                            }
+                                        };
+
                                         $scope.controller = controller;
                                         $scope.$apply(function() {
                                             var wait = function(){
                                                 $timeout(function(){
                                                     if(document.getElementById("templateView")){
-                                                        if(angular.element(document.getElementById("templateView")).scope().$parent.onready()) angular.element(document.getElementById("templateView")).scope().$parent.onready();
+                                                        // run original controller function, after dom loaded
+                                                        angular.element(document.getElementById('templateView')).scope().$parent.onready();
                                                     }else{
                                                         wait();
                                                     }

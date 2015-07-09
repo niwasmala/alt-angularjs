@@ -221,6 +221,19 @@ alt.component = function(config){
     return alt.components[config.name];
 };
 
+// hook ng-include after ready
+alt.component({
+    name: 'onReady',
+    require: 'ngInclude',
+    restrict: 'A',
+    scope: {
+        onReady: '&onReady'
+    },
+    link: ['$scope', '$log', '$element', function($scope, $log, $element){
+        if($scope.onReady) $scope.onReady();
+    }]
+});
+
 // creating uuid generator service
 alt.factory('$uuid', function() {
     return {
