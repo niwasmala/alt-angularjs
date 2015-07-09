@@ -229,7 +229,7 @@ alt.component({
     scope: {
         onReady: '&onReady'
     },
-    link: ['$scope', '$log', '$element', function($scope, $log, $element){
+    link: ['$scope', '$log', function($scope, $log){
         if($scope.onReady) $scope.onReady();
     }]
 });

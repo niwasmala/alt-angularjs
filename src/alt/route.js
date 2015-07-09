@@ -18,7 +18,7 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
             // configure application routing, with default
             alt.routing = function(){
                 return {
-                    template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view"></div>',
+                    template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view" data-on-ready="onready()"></div>',
                     controller: null,
                     resolve: {
                         load: [
@@ -48,26 +48,13 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                                 }
                                             }
 
-                                            if($scope){
-                                                $scope.onready = function(){
-                                                    fn.apply(self, args);
-                                                };
-                                            }
+                                            if($scope) $scope.onready = function(){
+                                                fn.apply(self, args);
+                                            };
                                         };
 
                                         $scope.controller = controller;
                                         $scope.$apply(function() {
-                                            var wait = function(){
-                                                $timeout(function(){
-                                                    if(document.getElementById("templateView")){
-                                                        // run original controller function, after dom loaded
-                                                        angular.element(document.getElementById('templateView')).scope().$parent.onready();
-                                                    }else{
-                                                        wait();
-                                                    }
-                                                });
-                                            };
-                                            wait();
                                             deferred.resolve();
                                         });
                                     }, function (error) {
