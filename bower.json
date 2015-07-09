@@ -6,7 +6,7 @@
     "Nicky Irawan <niwasmala@gmail.com>"
   ],
   "description": "AltJS using Angular",
-  "main": "./alt.js",
+  "main": "./dist/alt.min.js",
   "moduleType": [
     "globals"
   ],
