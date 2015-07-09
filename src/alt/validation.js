@@ -1,6 +1,6 @@
 // create validate factory
-angular.module('alt-validation', [])
-.factory('$valid', ['$log', function($log){
+alt.modules.validation = angular.module('alt-validation', [])
+    .factory('$valid', ['$log', function($log){
         return {
             required: function(field){
                 if(field !== 0)
@@ -62,10 +62,10 @@ angular.module('alt-validation', [])
                 return field.length == 4 && moment(field, 'HHmm').isValid();
             }
         };
-    }]);
+    }])
 
     // create validation service
-    alt.factory('$validate', ['$valid', '$log', '$injector', function($valid, $log, $injector){
+    .factory('$validate', ['$valid', '$log', '$injector', function($valid, $log, $injector){
         var validation = function(){
             return {
                 rules: [],
