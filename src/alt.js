@@ -44,10 +44,16 @@ alt.config([
         alt._directive = alt.directive;
         alt._filter = alt.filter;
         alt._run = alt.run;
+        alt._config = alt.config;
 
         // enabling define controller/service/directive, etc after bootstrapped
         alt.controller = function(name, constructor) {
             $controllerProvider.register(name, constructor);
+            return this;
+        };
+
+        alt.config = function(name, obj) {
+            $provide.config(name, obj);
             return this;
         };
 
