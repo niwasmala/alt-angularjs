@@ -233,10 +233,10 @@ alt.component({
     require: 'ngInclude',
     restrict: 'A',
     scope: {
-        onReady: '&onReady'
+        onReady: '&'
     },
-    link: ['$scope', '$log', function($scope, $log){
-        if($scope.onReady) $scope.onReady();
+    link: ['$scope', '$log', '$element', '$attrs', '$rootScope', '$controller', function($scope, $log, $element, $attrs, $rootScope, $controller){
+        if($attrs.onReady && $scope.onReady && (!$attrs.ngController || ($attrs.ngController && $rootScope.controller))) $scope.onReady();
     }]
 });
 

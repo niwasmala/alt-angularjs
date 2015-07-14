@@ -17,6 +17,8 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
 
             // configure application routing, with default
             alt.routing = function(){
+                var controllers = {};
+
                 return {
                     template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view" data-on-ready="onready()"></div>',
                     controller: null,
@@ -27,31 +29,35 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                 var onRouteChanged = $rootScope.onRouteChanged($route.current.params),
                                     deferred = $q.defer(),
                                     routeParams = $route.current.params,
-                                    $scope = angular.element(document.getElementsByTagName('body')[0]).scope();
+                                    $scope = angular.element(document.getElementsByTagName('body')[0]).scope(),
+                                    route = (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : ''),
+                                    fn = null;
 
+                                delete $scope.controller;
+                                delete $scope.view;
                                 onRouteChanged.then(function(){
-                                    $scope.view = alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'view.html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
+                                    $scope.view = alt.routeFolder + '/' + route + 'view.html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
                                     require([
-                                        alt.routeFolder + '/' + (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : '') + 'controller'
+                                        alt.routeFolder + '/' + route + 'controller'
                                     ], function (controller) {
                                         // replace controller function, dom is not loaded yet
-                                        var fn = controller[controller.length-1];
-                                        controller[controller.length-1] = function(){
-                                            var self = this,
-                                                args = arguments,
-                                                $scope;
+                                        if(typeof controllers[route] === 'undefined'){
+                                            controllers[route] = controller[controller.length-1];
+                                            controller[controller.length-1] = function(){
+                                                var self = this,
+                                                    args = arguments,
+                                                    $scope;
 
-                                            for(var i=0; i<controller.length; i++){
-                                                if(controller[i] == '$scope'){
+                                                for(var i=0; i<controller.length; i++) if(controller[i] == '$scope'){
                                                     $scope = arguments[i];
                                                     break;
                                                 }
-                                            }
 
-                                            if($scope) $scope.onready = function(){
-                                                fn.apply(self, args);
+                                                if($scope && controllers[route]) $scope.onready = function(){
+                                                    controllers[route].apply(self, args);
+                                                };
                                             };
-                                        };
+                                        }
 
                                         $scope.controller = controller;
                                         $scope.$apply(function() {
