@@ -4,7 +4,6 @@
   "description": "AltJS using Angular",
   "main": "build.js",
   "scripts": {
-    "test": "exit 0"
   },
   "repository": {
     "type": "git",
