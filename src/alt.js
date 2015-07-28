@@ -1,3 +1,4 @@
+
 var alt = angular.module('Alt', []);
 
 // environment
