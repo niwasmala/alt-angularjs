@@ -1,7 +1,7 @@
 alt.socketUrl = '';
 
 alt.modules.socket = angular.module('alt-socket', [])
-    .provide('socketFactory', function () {
+    .provider('socketFactory', [function () {
         'use strict';
 
         // when forwarding events, prefix the event name
@@ -94,7 +94,7 @@ alt.modules.socket = angular.module('alt-socket', [])
                 return wrappedSocket;
             };
         }];
-    })
+    }])
     .factory('$socket', ['socketFactory', function (socketFactory) {
         return socketFactory({
             ioSocket: io.connect(alt.socketUrl || alt.serverUrl)
