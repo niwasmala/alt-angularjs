@@ -36,7 +36,7 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                 delete $scope.controller;
                                 delete $scope.view;
                                 onRouteChanged.then(function(){
-                                    $scope.view = alt.routeFolder + '/' + route + 'view.html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
+                                    $scope.view = alt.routeFolder + '/' + route + 'view.' + (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
                                     require([
                                         alt.routeFolder + '/' + route + 'controller'
                                     ], function (controller) {

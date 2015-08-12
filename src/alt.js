@@ -6,6 +6,7 @@ alt.environment = 'production';
 alt.version = '2.0.0';
 alt.urlArgs = '';
 alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
+alt.theme = '';
 
 // alt modules installed
 alt.modules = {};
