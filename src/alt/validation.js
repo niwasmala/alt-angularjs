@@ -104,3 +104,5 @@ alt.modules.validation = angular.module('alt-validation', [])
         }
         return validation;
     }]);
+
+alt.module('alt-validation', alt.modules.route);
