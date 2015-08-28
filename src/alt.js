@@ -160,7 +160,7 @@ alt.component = function(config){
         config.replace = config.replace == null ? null : (config.replace || false);
         config.priority = config.priority == null ? null : (config.priority || null);
         config.templateUrl = config.templateUrl == null ? null : (config.templateUrl || null);
-        config.templateUrl = config.templateUrl == null ? null : (config.templateUrl + (config.templateUrl != '' && alt.urlArgs != '' ? '?' + alt.urlArgs : ''));
+        config.templateUrl = config.templateUrl == null ? null : (config.templateUrl + 'view.' +  (alt.theme != '' ? alt.theme + '.' : '') + (config.templateUrl != '' && alt.urlArgs != '' ? '?' + alt.urlArgs : ''));
         config.template = config.template == null ? null : (config.template || null);
         config.transclude = config.transclude == null ? null : (typeof config.transclude !== 'undefined' ? config.transclude : true);
         config.scope = config.scope == null ? null : (typeof config.scope !== 'undefined' ? config.scope :  {});
