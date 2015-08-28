@@ -46,6 +46,22 @@ alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
                 return true;
             }
         };
+    }])
+    .config(['$provide', '$httpProvider', function($provide, $httpProvider){
+        $provide.factory('authHttpInterceptor', ['$auth', '$log', '$q', '$window', function($auth, $log, $q, $window){
+            return {
+                request: function(config){
+                    console.log('auth', config.data);
+
+                    //if(config.url.indexOf(alt.serverUrl) === 0) data.push(transform("token", $auth.token));
+                    if(config.data) config.data.token = $auth.token;
+                    return config;
+                }
+            };
+        }]);
+
+        $httpProvider.interceptors.reverse().push('authHttpInterceptor');
+        $httpProvider.interceptors.reverse();
     }]);
 
 alt.module('alt-auth', alt.modules.auth);

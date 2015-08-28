@@ -1,6 +1,6 @@
 {
   "name": "alt-angularjs",
-  "version": "2.1.7",
+  "version": "2.1.8",
   "homepage": "https://github.com/niwasmala/alt-angularjs",
   "authors": [
     "Nicky Irawan <niwasmala@gmail.com>"
@@ -24,6 +24,9 @@
   "dependencies": {
     "angular": "*",
     "requirejs": "~2.1.18",
-    "requirejs-plugins": "~1.0.3"
+    "requirejs-plugins": "~1.0.3",
+    "angular-jwt": "~0.0.9",
+    "angular-route": "~1.4.3",
+    "store2": "~2.3.0"
   }
 }
