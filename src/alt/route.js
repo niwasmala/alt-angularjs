@@ -20,7 +20,7 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                 var controllers = {};
 
                 return {
-                    template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view" data-on-ready="onready()"></div>',
+                    template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view"></div>',
                     controller: null,
                     resolve: {
                         load: [
@@ -53,9 +53,9 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                                     break;
                                                 }
 
-                                                if($scope && controllers[route]) $scope.onready = function(){
+                                                $scope.$on('$includeContentLoaded', function(event) {
                                                     controllers[route].apply(self, args);
-                                                };
+                                                });
                                             };
                                         }
 
