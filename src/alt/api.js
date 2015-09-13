@@ -95,14 +95,15 @@ alt.modules.api = angular.module('alt-api', [])
 
                     if(typeof response.data === 'object'){
                         res.version = response.data.v || 100;
-                        res.code = response.data.s || 0;
+                        res.code = response.data.s || response.data.code || 1;
                         res.status = res.code;
-                        res.data = response.data.d || '';
-                        res.message = response.data.m || '';
+                        res.data = response.data.d || response.data.data || '';
+                        res.message = response.data.m || response.data.msg || '';
                         res.time = response.data.t || 0;
                         res.usage = response.data.u || '';
+                        res.token = response.data.token || '';
 
-                        if(res.status != 0){
+                        if(res.status != 1){
                             if(res.status == '401'){
                                 $window.location.href = alt.baseUrl + 'auth/login';
                                 return $q.reject(res);

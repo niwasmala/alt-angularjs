@@ -92,8 +92,10 @@ alt.modules.validation = angular.module('alt-validation', [])
                 check: function(){
                     var validation = this.validate(),
                         $alert = $injector.get('$alert');
-                    if(!validation.res && $alert){
-                        $alert.add(validation.message.join("<br/>"), $alert.danger);
+                    if(!validation.res){
+                        if($alert) for(var i=0; i<validation.message.length; i++){
+                            $alert.add(validation.message[i], $alert.danger);
+                        }
                     }
                     return validation.res;
                 }

@@ -1,6 +1,6 @@
 {
   "name": "alt-angularjs",
-  "version": "2.1.10",
+  "version": "2.1.11",
   "description": "AltJS using Angular",
   "main": "build.js",
   "scripts": {
