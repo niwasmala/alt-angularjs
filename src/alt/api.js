@@ -126,12 +126,16 @@ alt.modules.api = angular.module('alt-api', [])
 
         $httpProvider.interceptors.push('httpInterceptor');
     }])
-    .factory('$api', ['$http', '$log', function($http, $log){
-        return function(url, pkey){
+    .factory('$api', ['$http', '$log', '$q', function($http, $log, $q){
+        return function(url, pkey, setting){
             url = url || '';
             var tmp = url.split('/');
             pkey = pkey || (tmp[tmp.length-1] + 'id');
             url = (url.indexOf(alt.serverUrl) !== 0 ? alt.serverUrl : '') + url;
+            setting = alt.extend({
+                success: angular.noop,
+                error: angular.noop
+            }, setting);
             return {
                 url: url,
                 pkey: pkey,
@@ -141,17 +145,29 @@ alt.modules.api = angular.module('alt-api', [])
                     data = data || {};
                     setting = alt.extend({
                         skipAuthorization: false,
-                        ismultipart: false
+                        ismultipart: false,
+                        method: 'POST'
                     }, setting);
-                    return $http({
+
+                    var deferred = $q.defer();
+
+                    $http({
                         headers: {
                             'Content-Type': setting.ismultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
                         },
                         skipAuthorization: setting.skipAuthorization,
-                        method: 'POST',
+                        method: setting.method,
                         data: data,
                         url: url + url2
+                    }).then(function(response){
+                        if(setting.success) setting.success(response);
+                        deferred.resolve(response);
+                    }, function(error){
+                        if(setting.error) setting.error(error);
+                        deferred.resolve(error);
                     });
+
+                    return deferred.promise;
                 },
                 count: function(data, setting){
                     return this.connect('count', data, setting);
