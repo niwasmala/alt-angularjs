@@ -7,19 +7,23 @@ alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
         return {
             token: '',
             userdata: {},
+            set_token: function(token){
+                this.token = token;
+                store.set(alt.application + '_token', this.token);
+            },
+            set_userdata: function(userdata){
+                this.userdata = userdata;
+                store.set(alt.application + '_userdata', this.userdata);
+            },
             login: function(data){
                 // data can be a string token or object userdata
                 if(typeof data === 'string'){
                     // token
-                    this.token = data;
-                    this.userdata = jwtHelper.decodeToken(this.token);
+                    this.set_token(data);
+                    this.set_userdata(jwtHelper.decodeToken(this.token));
                 }else{
-                    this.token = '';
-                    this.userdata = data;
+                    this.set_userdata(data);
                 }
-
-                store.set(alt.application + '_token', this.token);
-                store.set(alt.application + '_userdata', this.userdata);
             },
             logout: function(){
                 this.token = '';
