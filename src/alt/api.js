@@ -150,9 +150,7 @@ alt.modules.api = angular.module('alt-api', [])
                         method: 'POST'
                     }, setting);
 
-                    var deferred = $q.defer();
-
-                    $http({
+                    var params = {
                         headers: {
                             'Content-Type': setting.ismultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
                         },
@@ -160,13 +158,20 @@ alt.modules.api = angular.module('alt-api', [])
                         method: setting.method,
                         data: data,
                         url: url + url2
-                    }).then(function(response){
-                        if(config.success(response) !== false)
-                            deferred.resolve(response);
-                    }, function(error){
+                    }, deferred = $q.defer();
+
+                    if(config.connect(params) !== false){
+                        $http(params).then(function(response){
+                            if(config.success(response) !== false)
+                                deferred.resolve(response);
+                        }, function(error){
+                            if(config.error(error) !== false)
+                                deferred.reject(error);
+                        });
+                    }else{
                         if(config.error(error) !== false)
                             deferred.reject(error);
-                    });
+                    }
 
                     return deferred.promise;
                 },
