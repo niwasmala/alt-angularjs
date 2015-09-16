@@ -53,8 +53,9 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                                                     break;
                                                 }
 
-                                                $scope.$on('$includeContentLoaded', function(event) {
+                                                var off = $scope.$on('$includeContentLoaded', function(event) {
                                                     controllers[route].apply(self, args);
+                                                    off();
                                                 });
                                             };
                                         }
