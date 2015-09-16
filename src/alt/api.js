@@ -162,15 +162,15 @@ alt.modules.api = angular.module('alt-api', [])
 
                     if(config.connect(params) !== false){
                         $http(params).then(function(response){
-                            if(config.success(response) !== false)
-                                deferred.resolve(response);
+                            if(config.success(response, params) !== false)
+                                deferred.resolve(response, params);
                         }, function(error){
-                            if(config.error(error) !== false)
-                                deferred.reject(error);
+                            if(config.error(error, params) !== false)
+                                deferred.reject(error, params);
                         });
                     }else{
-                        if(config.error(error) !== false)
-                            deferred.reject(error);
+                        if(config.error({message: 'Tidak dapat terhubung'}, params) !== false)
+                            deferred.reject({message: 'Tidak dapat terhubung'}, params);
                     }
 
                     return deferred.promise;
