@@ -127,18 +127,19 @@ alt.modules.api = angular.module('alt-api', [])
         $httpProvider.interceptors.push('httpInterceptor');
     }])
     .factory('$api', ['$http', '$log', '$q', function($http, $log, $q){
-        return function(url, pkey, setting){
+        return function(url, pkey, config){
             url = url || '';
             var tmp = url.split('/');
             pkey = pkey || (tmp[tmp.length-1] + 'id');
             url = (url.indexOf(alt.serverUrl) !== 0 ? alt.serverUrl : '') + url;
-            setting = alt.extend({
-                success: angular.noop,
-                error: angular.noop
-            }, setting);
+            config = alt.extend({
+                success: function(){ return true; },
+                error: function(){ return true; }
+            }, config);
             return {
                 url: url,
                 pkey: pkey,
+                config: config,
                 connect: function(url2, data, setting){
                     url2 = url2 || '';
                     url2 = (url2.indexOf('/') !== 0 ? '/' : '') + url2;
@@ -160,11 +161,11 @@ alt.modules.api = angular.module('alt-api', [])
                         data: data,
                         url: url + url2
                     }).then(function(response){
-                        if(setting.success) setting.success(response);
-                        deferred.resolve(response);
+                        if(config.success(response) !== false)
+                            deferred.resolve(response);
                     }, function(error){
-                        if(setting.error) setting.error(error);
-                        deferred.resolve(error);
+                        if(config.error(error) !== false)
+                            deferred.reject(error);
                     });
 
                     return deferred.promise;
