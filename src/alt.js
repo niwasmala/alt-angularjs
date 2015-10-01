@@ -207,10 +207,14 @@ alt.directive('altComponent', ['$log', function($log){
                         fn.apply(this, args);
                     }
 
+                    angular.forEach($scope, function(value, key){
+                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent')
+                            $scope['_'+key] = angular.copy(value);
+                    });
+
                     // set component scope from outside
                     angular.forEach($scope.scope, function(value, key){
-                        $scope[key] = value;
-                        $scope['$'+key] = value;
+                        $scope[key] = angular.copy(value);
                     });
 
                     // set outside scope from component
