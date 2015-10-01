@@ -20,61 +20,60 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                 var controllers = {};
 
                 return {
-                    template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view"></div>',
-                    controller: null,
-                    resolve: {
-                        load: [
-                            '$q', '$route', '$timeout', '$log', '$window', '$rootScope',
-                            function ($q, $route, $timeout, $log, $window, $rootScope){
-                                var onRouteChanged = $rootScope.onRouteChanged($route.current.params),
-                                    deferred = $q.defer(),
-                                    routeParams = $route.current.params,
-                                    $scope = angular.element(document.getElementsByTagName('body')[0]).scope(),
-                                    route = (routeParams['altmodule'] ? routeParams['altmodule'] + '/' : '') + (routeParams['altcontroller'] ? routeParams['altcontroller'] + '/' : '') + (routeParams['altaction'] ? routeParams['altaction'] + '/' : ''),
-                                    fn = null;
+                    //template: '<div id="templateView" data-ng-controller="controller" data-ng-include="view"></div>',
+                    templateUrl: function($routeParams){
+                        var location = alt.routeFolder +'/' + ($routeParams['altmodule'] ? $routeParams['altmodule'] + '/' : '') + ($routeParams['altcontroller'] ? $routeParams['altcontroller'] + '/' : '') + ($routeParams['altaction'] ? $routeParams['altaction'] + '/' : ''),
+                            view = location + 'view.' + (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
 
-                                delete $scope.controller;
-                                delete $scope.view;
-                                onRouteChanged.then(function(){
-                                    $scope.view = alt.routeFolder + '/' + route + 'view.' + (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
-                                    require([
-                                        alt.routeFolder + '/' + route + 'controller'
-                                    ], function (controller) {
-                                        // replace controller function, dom is not loaded yet
-                                        if(typeof controllers[route] === 'undefined'){
-                                            controllers[route] = controller[controller.length-1];
-                                            controller[controller.length-1] = function(){
-                                                var self = this,
-                                                    args = arguments,
-                                                    $scope;
+                        return view;
+                    },
+                    controller: ['$scope', '$log', '$routeParams', '$rootScope', '$q', function($scope, $log, $routeParams, $rootScope, $q){
+                        var onRouteChanged = $rootScope.onRouteChanged($routeParams) || function(){
+                                    var deferred = $q.defer();
+                                    deferred.resolve();
+                                    return deferred.promise;
+                                },
+                            location = alt.routeFolder +'/' + ($routeParams['altmodule'] ? $routeParams['altmodule'] + '/' : '') + ($routeParams['altcontroller'] ? $routeParams['altcontroller'] + '/' : '') + ($routeParams['altaction'] ? $routeParams['altaction'] + '/' : ''),
+                            $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
 
-                                                for(var i=0; i<controller.length; i++) if(controller[i] == '$scope'){
-                                                    $scope = arguments[i];
-                                                    break;
-                                                }
+                        onRouteChanged.then(function(){
+                            require([
+                                location + 'controller'
+                            ], function (controller) {
+                                var i = 0,
+                                    args = [];
+                                if(typeof controller === "function"){
+                                    for(i=0; i<arguments.length; i++) args.push(arguments[i]);
+                                    args.push($injector);
+                                    controller.apply(this, args);
+                                }else if(typeof controller === "object" && controller.length){
+                                    var fn = typeof controller[controller.length-1] == 'function' ? controller[controller.length-1] : angular.noop,
+                                        len = typeof controller[controller.length-1] == 'function' ? controller.length - 1 : controller.length,
+                                        tmp;
 
-                                                var off = $scope.$on('$includeContentLoaded', function(event) {
-                                                    controllers[route].apply(self, args);
-                                                    off();
-                                                });
-                                            };
+                                    for(i=0; i<len; i++){
+                                        tmp = null;
+                                        switch(controller[i]){
+                                            case '$scope':
+                                                tmp = $scope;
+                                                break;
+                                            case '$injector':
+                                                tmp = $injector;
+                                                break;
+                                            default:
+                                                tmp = $injector.get(controller[i]) || null;
+                                                break;
                                         }
+                                        args.push(tmp);
+                                    }
+                                    fn.apply(this, args);
+                                }
 
-                                        $scope.controller = controller;
-                                        $scope.$apply(function() {
-                                            deferred.resolve();
-                                        });
-                                    }, function (error) {
-                                        deferred.reject(error);
-                                    });
-                                }, function(error){
-                                    deferred.reject(error);
-                                });
-
-                                return deferred.promise;
-                            }
-                        ]
-                    }
+                                // apply all changes
+                                $scope.$apply();
+                            });
+                        });
+                    }]
                 };
             };
 

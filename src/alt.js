@@ -8,6 +8,7 @@ alt.urlArgs = '';
 alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
 alt.theme = '';
 alt.requires = [];
+alt.componentFolder = 'component';
 
 // alt modules installed
 alt.modules = {};
@@ -151,96 +152,97 @@ alt.module = function(modulename, module){
     return alt;
 };
 
-// creating component
-alt.components = {};
-alt.component = function(config){
-    if(typeof config.name === 'undefined') throw Error('Component must have a name!');
-    if(typeof alt.components[config.name] === 'undefined'){
-        config.require = config.require == null ? null : (config.require || null);
-        config.restrict = config.restrict == null ? null : (config.restrict || 'A');
-        config.replace = config.replace == null ? null : (config.replace || false);
-        config.priority = config.priority == null ? null : (config.priority || null);
-        config.templateUrl = config.templateUrl == null ? null : (config.templateUrl || null);
-        config.templateUrl = config.templateUrl == null ? null : (config.templateUrl + 'view.' +  (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (config.templateUrl != '' && alt.urlArgs != '' ? '?' + alt.urlArgs : ''));
-        config.template = config.template == null ? null : (config.template || null);
-        config.transclude = config.transclude == null ? null : (typeof config.transclude !== 'undefined' ? config.transclude : true);
-        config.scope = config.scope == null ? null : (typeof config.scope !== 'undefined' ? config.scope :  {});
-        config.controller = config.controller == null ? null : (config.controller || null);
-        config.compile = config.compile == null ? null : (config.compile || null);
+// calling component (controller and view) defined
+alt.directive('altComponent', ['$log', function($log){
+    return {
+        templateUrl: function(element, attribute, transclude){
+            var location = alt.componentFolder +'/' + attribute.altComponent + '/',
+                view = location + 'view.' + (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
 
-        alt.components[config.name] = alt.directive(config.name, ['$log', '$parse', '$timeout', function($log, $parse, $timeout){
-            return {
-                require: config.require,
-                restrict: config.restrict,
-                replace: config.replace,
-                priority: config.priority,
-                templateUrl: config.templateUrl,
-                template: config.template,
-                transclude: config.transclude,
-                scope: config.scope,
-                controller: config.controller,
-                compile: config.compile,
-                link: function($scope, $element, $attrs, $controller){
-                    $scope.$component = config.name;
-                    $scope.$name = $attrs[config.name];
-                    $scope.alt = alt;
-                    var $injector = angular.element(document.getElementsByTagName('body')[0]).injector(),
-                        i = 0,
+            return view;
+        },
+        scope: {
+            altComponent: '@',
+            scope: '=',
+            onload: '&?'
+        },
+        controller: ['$scope', '$timeout', '$interval', '$attrs', '$element', function($scope, $timeout, $interval, $attrs, $element){
+            // wait until $scope.scope is defined
+            var load = function() {
+                $scope.onload = $scope.onload || function(){ return angular.noop; };
+                $scope.onload = $scope.onload();
+
+                var location = alt.componentFolder +'/' + $scope.altComponent + '/',
+                    $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
+
+                require([
+                    location + 'controller'
+                ], function (controller) {
+                    var i = 0,
                         args = [];
-                    if(typeof config.link === "function"){
+                    if(typeof controller === "function"){
                         for(i=0; i<arguments.length; i++) args.push(arguments[i]);
                         args.push($injector);
-                        config.link.apply(this, args);
-                    }else if(typeof config.link === "object" && config.link.length){
-                        var fn = typeof config.link[config.link.length-1] == 'function' ? config.link[config.link.length-1] : angular.noop,
-                            len = typeof config.link[config.link.length-1] == 'function' ? config.link.length - 1 : config.link.length,
+                        controller.apply(this, args);
+                    }else if(typeof controller === "object" && controller.length){
+                        var fn = typeof controller[controller.length-1] == 'function' ? controller[controller.length-1] : angular.noop,
+                            len = typeof controller[controller.length-1] == 'function' ? controller.length - 1 : controller.length,
                             tmp;
+
                         for(i=0; i<len; i++){
                             tmp = null;
-                            switch(config.link[i]){
+                            switch(controller[i]){
                                 case '$scope':
                                     tmp = $scope;
-                                    break;
-                                case '$element':
-                                    tmp = $element;
-                                    break;
-                                case '$attrs':
-                                    tmp = $attrs;
-                                    break;
-                                case '$controller':
-                                    tmp = $controller;
                                     break;
                                 case '$injector':
                                     tmp = $injector;
                                     break;
                                 default:
-                                    tmp = $injector.get(config.link[i]) || null;
+                                    tmp = $injector.get(controller[i]) || null;
                                     break;
                             }
                             args.push(tmp);
                         }
                         fn.apply(this, args);
                     }
+
+                    // set component scope from outside
+                    angular.forEach($scope.scope, function(value, key){
+                        $scope[key] = value;
+                        $scope['$'+key] = value;
+                    });
+
+                    // set outside scope from component
+                    var getParent = function(scope, i){
+                        if(i > 3) return null;
+                        if(scope.$parent == null) return null;
+                        if(typeof scope.$parent[$attrs.scope] === "object") return scope.$parent;
+                        return getParent(scope.$parent, i+1);
+                    }, $parent = getParent($scope, 0);
+
+                    if($parent != null){
+                        $parent[$attrs.scope] = $scope;
+                    }
+                    $log.debug($scope.altComponent, $scope.$id, $parent);
+
+                    // apply
+                    $scope.$apply();
+
+                    // call onload after all applied
+                    $timeout(function(){
+                        $scope.onload();
+                    }, 1000);
+                });
+            }, interval = function(){
+                if(typeof $scope.scope !== 'undefined'){
+                    window.clearInterval(id_interval);
+                    load();
                 }
-            };
-        }]);
-    }
-
-    return alt.components[config.name];
-};
-
-// hook ng-include after ready
-alt.component({
-    name: 'onReady',
-    require: 'ngInclude',
-    restrict: 'A',
-    scope: {
-        onReady: '&'
-    },
-    link: ['$scope', '$log', '$element', '$attrs', '$rootScope', '$controller', function($scope, $log, $element, $attrs, $rootScope, $controller){
-        if($attrs.onReady && $scope.onReady && (!$attrs.ngController || ($attrs.ngController && $rootScope.controller))) $scope.onReady();
-    }]
-});
+            }, id_interval = window.setInterval(interval, 100);
+        }]
+    };
+}]);
 
 // creating uuid generator service
 alt.factory('$uuid', function() {
