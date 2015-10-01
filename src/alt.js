@@ -199,6 +199,12 @@ alt.directive('altComponent', ['$log', function($log){
                                 case '$injector':
                                     tmp = $injector;
                                     break;
+                                case '$attrs':
+                                    tmp = $attrs;
+                                    break;
+                                case '$element':
+                                    tmp = $element;
+                                    break;
                                 default:
                                     tmp = $injector.get(controller[i]) || null;
                                     break;
