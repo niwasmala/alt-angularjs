@@ -161,6 +161,7 @@ alt.directive('altComponent', ['$log', function($log){
 
             return view;
         },
+        transclude: true,
         scope: {
             altComponent: '@',
             scope: '=',

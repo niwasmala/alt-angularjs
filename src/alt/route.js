@@ -71,6 +71,9 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
 
                                 // apply all changes
                                 $scope.$apply();
+
+                                // emit that route has been loaded
+                                $rootScope.$emit('$routeChangeLoaded');
                             });
                         });
                     }]
