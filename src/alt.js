@@ -224,7 +224,6 @@ alt.directive('altComponent', ['$log', function($log){
                     if($parent != null){
                         $parent[$attrs.scope] = $scope;
                     }
-                    $log.debug($scope.altComponent, $scope.$id, $parent);
 
                     // apply
                     $scope.$apply();
