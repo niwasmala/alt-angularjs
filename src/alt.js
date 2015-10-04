@@ -232,7 +232,6 @@ alt.directive('altComponent', ['$log', function($log){
                         return getParent(scope.$parent);
                     }, $parent = getParent($scope, 0);
 
-                    if($attrs.altComponent == 'registrasi/input') $log.debug($parent);
                     if($parent != null){
                         $parent[$attrs.scope] = $scope;
                     }
