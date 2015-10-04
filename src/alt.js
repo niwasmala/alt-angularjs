@@ -214,8 +214,9 @@ alt.directive('altComponent', ['$log', function($log){
                         fn.apply(this, args);
                     }
 
+                    // backup original scope value from controller
                     angular.forEach($scope, function(value, key){
-                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent')
+                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent' && key != 'onload')
                             $scope['_'+key] = angular.copy(value);
                     });
 
@@ -225,13 +226,13 @@ alt.directive('altComponent', ['$log', function($log){
                     });
 
                     // set outside scope from component
-                    var getParent = function(scope, i){
-                        if(i > 3) return null;
+                    var getParent = function(scope){
                         if(scope.$parent == null) return null;
-                        if(typeof scope.$parent[$attrs.scope] === "object") return scope.$parent;
-                        return getParent(scope.$parent, i+1);
+                        if(!scope.$parent.$$transcluded && typeof scope.$parent.$attrs === 'undefined' && typeof scope.$parent[$attrs.scope] === "object") return scope.$parent;
+                        return getParent(scope.$parent);
                     }, $parent = getParent($scope, 0);
 
+                    if($attrs.altComponent == 'registrasi/input') $log.debug($parent);
                     if($parent != null){
                         $parent[$attrs.scope] = $scope;
                     }
@@ -242,10 +243,104 @@ alt.directive('altComponent', ['$log', function($log){
                     // call onload after all applied
                     $timeout(function(){
                         $scope.onload();
-                    }, 1000);
+                    });
                 });
             }, interval = function(){
                 if(typeof $scope.scope !== 'undefined'){
+                    window.clearInterval(id_interval);
+                    load();
+                }
+            }, id_interval = window.setInterval(interval, 100);
+        }]
+    };
+}]);
+
+// calling component (controller and view) defined
+alt.directive('altTransclude', ['$log', function($log){
+    return {
+        templateUrl: function(element, attribute, transclude){
+            var location = alt.componentFolder +'/' + attribute.altTransclude + '/',
+                view = location + 'view.' + (alt.theme != '' ? alt.theme + '.' : '') + 'html' + (alt.urlArgs != '' ? '?' + alt.urlArgs : '');
+
+            return view;
+        },
+        transclude: true,
+        scope: true,
+        controller: ['$scope', '$timeout', '$interval', '$attrs', '$element', '$rootScope', function($scope, $timeout, $interval, $attrs, $element, $rootScope){
+            $scope.$attrs = $attrs;
+
+            var load = function() {
+                var scope = $scope.$new(),
+                    location = alt.componentFolder +'/' + $attrs.altTransclude + '/',
+                    $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
+
+                scope.altTransclude = $attrs.altTransclude;
+                scope.scope = $attrs.scope;
+                scope.onload = $scope[$attrs.onload] || angular.noop;
+                scope.parent = $scope;
+
+                require([
+                    location + 'controller'
+                ], function (controller) {
+                    var i = 0,
+                        args = [];
+                    if(typeof controller === "function"){
+                        for(i=0; i<arguments.length; i++) args.push(arguments[i]);
+                        args.push($injector);
+                        controller.apply(this, args);
+                    }else if(typeof controller === "object" && controller.length){
+                        var fn = typeof controller[controller.length-1] == 'function' ? controller[controller.length-1] : angular.noop,
+                            len = typeof controller[controller.length-1] == 'function' ? controller.length - 1 : controller.length,
+                            tmp;
+
+                        for(i=0; i<len; i++){
+                            tmp = null;
+                            switch(controller[i]){
+                                case '$scope':
+                                    tmp = scope;
+                                    break;
+                                case '$injector':
+                                    tmp = $injector;
+                                    break;
+                                case '$attrs':
+                                    tmp = $attrs;
+                                    break;
+                                case '$element':
+                                    tmp = $element;
+                                    break;
+                                default:
+                                    tmp = $injector.get(controller[i]) || null;
+                                    break;
+                            }
+                            args.push(tmp);
+                        }
+                        fn.apply(this, args);
+                    }
+
+                    // backup original scope value from controller
+                    angular.forEach(scope, function(value, key){
+                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altTransclude' && key != 'onload' && key != 'parent')
+                            scope['_'+key] = angular.copy(value);
+                    });
+
+                    // set component scope from outside
+                    angular.forEach($scope[$attrs.scope], function(value, key){
+                        if(value != null && typeof value.$watch === 'undefined')
+                            scope[key] = angular.copy(value);
+                    });
+
+                    // apply
+                    if($attrs.scope) $scope[$attrs.scope] = scope;
+                    if($attrs.scope && $scope.$parent[$attrs.scope]) $scope.$parent[$attrs.scope] = scope;
+                    scope.$apply();
+
+                    // call onload after all applied
+                    $timeout(function(){
+                        scope.onload();
+                    });
+                });
+            }, interval = function(){
+                if(typeof $attrs.scope === "undefined" || typeof $scope[$attrs.scope] !== 'undefined'){
                     window.clearInterval(id_interval);
                     load();
                 }

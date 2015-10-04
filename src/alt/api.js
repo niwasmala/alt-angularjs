@@ -95,23 +95,23 @@ alt.modules.api = angular.module('alt-api', [])
 
                     if(typeof response.data === 'object'){
                         res.version = response.data.v || 100;
-                        res.code = response.data.s || response.data.code || 1;
+                        res.code = response.data.s || response.data.c || response.data.code || response.status || 200;
                         res.status = res.code;
-                        res.data = response.data.d || response.data.data || '';
-                        res.message = response.data.m || response.data.msg || '';
+                        res.data = response.data.d || response.data.data || response.data;
+                        res.message = response.data.m || response.data.msg || response.data;
                         res.time = response.data.t || 0;
                         res.usage = response.data.u || '';
-                        res.token = response.data.token || '';
+                        res.token = response.data.token || response.token || '';
 
-                        if(res.status != 1){
-                            if(res.status == '401'){
+                        if(res.status != 200){
+                            if(res.status == 401){
                                 $window.location.href = alt.baseUrl + 'auth/login';
                                 return $q.reject(res);
                             }
                             res.message = res.message || 'Gagal terhubung ke server';
                             return $q.reject(res);
                         }
-                    }else if(response.config.url.indexOf(alt.serverUrl) === 0 && typeof response.data !== 'object'){
+                    }else if(response.config.url.indexOf(alt.serverUrl) === 0 && response.status != 200 && typeof response.data !== 'object'){
                         res.code = -1;
                         res.status = res.code;
                         res.message = 'Tidak dapat terhubung ke server';
