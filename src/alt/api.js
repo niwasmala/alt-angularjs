@@ -150,30 +150,41 @@ alt.modules.api = angular.module('alt-api', [])
                         method: 'POST'
                     }, setting);
 
-                    var params = {
-                        headers: {
-                            'Content-Type': setting.ismultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
-                        },
-                        skipAuthorization: setting.skipAuthorization,
-                        method: setting.method,
-                        data: data,
-                        url: url + url2
-                    }, deferred = $q.defer();
+                    var deferred = $q.defer(),
+                        iscancelled = false,
+                        promise = deferred.promise,
+                        canceller = $q.defer(),
+                        params = {
+                            headers: {
+                                'Content-Type': setting.ismultipart ? 'multipart/form-data' : 'application/x-www-form-urlencoded'
+                            },
+                            skipAuthorization: setting.skipAuthorization,
+                            method: setting.method,
+                            data: data,
+                            url: url + url2,
+                            timeout: canceller.promise
+                        };
 
                     if(config.connect(params) !== false){
                         $http(params).then(function(response){
-                            if(config.success(response, params) !== false)
-                                deferred.resolve(response, params);
+                            if(config.success(response, params, deferred, iscancelled) !== false)
+                                deferred.resolve(response, params, deferred, iscancelled);
                         }, function(error){
-                            if(config.error(error, params) !== false)
-                                deferred.reject(error, params);
+                            if(config.error(error, params, deferred, iscancelled) !== false)
+                                deferred.reject(error, params, deferred, iscancelled);
                         });
                     }else{
-                        if(config.error({message: 'Tidak dapat terhubung'}, params) !== false)
-                            deferred.reject({message: 'Tidak dapat terhubung'}, params);
+                        if(config.error({message: 'Tidak dapat terhubung'}, params, deferred, iscancelled) !== false)
+                            deferred.reject({message: 'Tidak dapat terhubung'}, params, deferred, iscancelled);
                     }
 
-                    return deferred.promise;
+                    // function to abort
+                    promise.abort = function(){
+                        iscancelled = true;
+                        canceller.resolve();
+                    };
+
+                    return promise;
                 },
                 count: function(data, setting){
                     return this.connect('count', data, setting);
