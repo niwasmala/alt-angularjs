@@ -63,6 +63,10 @@ alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
 
         $httpProvider.interceptors.reverse().push('authHttpInterceptor');
         $httpProvider.interceptors.reverse();
+    }])
+    .run(['$auth', '$log', function($auth, $log){
+        var token = store.get(alt.application + '_token');
+        if(token) $auth.login(store.get(alt.application + '_token'));
     }]);
 
 alt.module('alt-auth', alt.modules.auth);
