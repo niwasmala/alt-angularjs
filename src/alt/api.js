@@ -133,6 +133,7 @@ alt.modules.api = angular.module('alt-api', [])
             pkey = pkey || (tmp[tmp.length-1] + 'id');
             url = (url.indexOf(alt.serverUrl) !== 0 ? alt.serverUrl : '') + url;
             config = alt.extend({
+                connect: function(){ return true; },
                 success: function(){ return true; },
                 error: function(){ return true; }
             }, config);
