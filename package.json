@@ -1,8 +1,8 @@
 {
   "name": "alt-angularjs",
-  "version": "3.0.3",
+  "version": "3.0.0",
   "description": "AltJS using Angular",
-  "main": "build.js",
+  "main": "dist/alt.js",
   "scripts": {
   },
   "repository": {
