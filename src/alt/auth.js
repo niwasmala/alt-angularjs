@@ -55,7 +55,7 @@ alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
         $provide.factory('authHttpInterceptor', ['$auth', '$log', '$q', '$window', function($auth, $log, $q, $window){
             return {
                 request: function(config){
-                    if(config.url.indexOf(alt.serverUrl) === 0 && config.data) config.data.token = $auth.token;
+                    if(config.url.indexOf(alt.serverUrl) === 0 && config.data && $auth.token) config.data.token = $auth.token;
                     return config;
                 }
             };
