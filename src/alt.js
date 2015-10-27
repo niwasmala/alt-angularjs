@@ -172,6 +172,7 @@ alt.directive('altComponent', ['$log', function($log){
             var load = function() {
                 $scope.onload = $scope.onload || function(){ return angular.noop; };
                 $scope.onload = $scope.onload();
+                $scope.alt = alt;
 
                 var location = alt.componentFolder +'/' + $scope.altComponent + '/',
                     $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
@@ -273,6 +274,7 @@ alt.directive('altTransclude', ['$log', function($log){
                     location = alt.componentFolder +'/' + $attrs.altTransclude + '/',
                     $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
 
+                scope.alt = alt;
                 scope.altTransclude = $attrs.altTransclude;
                 scope.scope = $attrs.scope;
                 scope.onload = $scope[$attrs.onload] || angular.noop;
