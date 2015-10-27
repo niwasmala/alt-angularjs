@@ -37,7 +37,7 @@ alt.modules.route = angular.module('alt-route', ['ngRoute'])
                             $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
 
                         onRouteChanged.then(function(){
-                            require([
+                            requirejs([
                                 location + 'controller'
                             ], function (controller) {
                                 var i = 0,

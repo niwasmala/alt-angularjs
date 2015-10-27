@@ -176,7 +176,7 @@ alt.directive('altComponent', ['$log', function($log){
                 var location = alt.componentFolder +'/' + $scope.altComponent + '/',
                     $injector = angular.element(document.getElementsByTagName('body')[0]).injector();
 
-                require([
+                requirejs([
                     location + 'controller'
                 ], function (controller) {
                     var i = 0,
@@ -278,7 +278,7 @@ alt.directive('altTransclude', ['$log', function($log){
                 scope.onload = $scope[$attrs.onload] || angular.noop;
                 scope.parent = $scope;
 
-                require([
+                requirejs([
                     location + 'controller'
                 ], function (controller) {
                     var i = 0,
