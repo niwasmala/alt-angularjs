@@ -195,8 +195,14 @@ alt.modules.api = angular.module('alt-api', [])
                 },
                 retrieve: function(id, data, setting){
                     id = id || '';
-                    data = data || {};
-                    data[pkey] = id;
+
+                    if(typeof id === 'object'){
+                        data = angular.copy(id);
+                    }else{
+                        data = data || {};
+                        data[pkey] = id;
+                    }
+
                     return this.connect('retrieve', data, setting);
                 },
                 keyvalues: function(data, setting){
