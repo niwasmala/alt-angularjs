@@ -196,10 +196,10 @@ alt.modules.api = angular.module('alt-api', [])
                 retrieve: function(id, data, setting){
                     id = id || '';
 
+                    data = data || {};
                     if(typeof id === 'object'){
                         data = angular.copy(id);
                     }else{
-                        data = data || {};
                         data[pkey] = id;
                     }
 
@@ -214,10 +214,16 @@ alt.modules.api = angular.module('alt-api', [])
                 update: function(data, setting){
                     return this.connect('update', data, setting);
                 },
-                remove: function(id, setting){
+                remove: function(id, data, setting){
                     id = id || '';
-                    var data = {};
-                    data[pkey] = id;
+
+                    data = data || {};
+                    if(typeof id === 'object'){
+                        data = angular.copy(id);
+                    }else{
+                        data[pkey] = id;
+                    }
+
                     return this.connect('delete', data, setting);
                 },
                 isexist: function(data, setting){

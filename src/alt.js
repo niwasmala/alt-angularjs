@@ -229,7 +229,7 @@ alt.directive('altComponent', ['$log', function($log){
                     // set outside scope from component
                     var getParent = function(scope){
                         if(scope.$parent == null) return null;
-                        if(!scope.$parent.$$transcluded && typeof scope.$parent.$attrs === 'undefined' && typeof scope.$parent[$attrs.scope] === "object") return scope.$parent;
+                        if(typeof scope.$parent.$attrs === 'undefined' && typeof scope.$parent[$attrs.scope] === "object") return scope.$parent;
                         return getParent(scope.$parent);
                     }, $parent = getParent($scope, 0);
 
