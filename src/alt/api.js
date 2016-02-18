@@ -91,7 +91,13 @@ alt.modules.api = angular.module('alt-api', [])
                     return config;
                 },
                 response: function(response){
-                    var res = angular.copy(response);
+                    var res = {};
+                    try{
+                        res = angular.copy(response);
+                    }catch(e){
+
+                    }
+
 
                     if(typeof response.data === 'object'){
                         res.version = response.data.v || 100;
@@ -198,7 +204,11 @@ alt.modules.api = angular.module('alt-api', [])
 
                     data = data || {};
                     if(typeof id === 'object'){
-                        data = angular.copy(id);
+                        try{
+                            data = angular.copy(id);
+                        }catch(e){
+                            data = id;
+                        }
                     }else{
                         data[pkey] = id;
                     }
@@ -219,7 +229,11 @@ alt.modules.api = angular.module('alt-api', [])
 
                     data = data || {};
                     if(typeof id === 'object'){
-                        data = angular.copy(id);
+                        try{
+                            data = angular.copy(id);
+                        }catch(e){
+                            data = id;
+                        }
                     }else{
                         data[pkey] = id;
                     }

@@ -217,13 +217,22 @@ alt.directive('altComponent', ['$log', function($log){
 
                     // backup original scope value from controller
                     angular.forEach($scope, function(value, key){
-                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent' && key != 'onload')
-                            $scope['_'+key] = angular.copy(value);
+                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent' && key != 'onload') {
+                            try{
+                                $scope['_' + key] = angular.copy(value);
+                            }catch(e){
+
+                            }
+                        }
                     });
 
                     // set component scope from outside
                     angular.forEach($scope.scope, function(value, key){
-                        $scope[key] = angular.copy(value);
+                        try{
+                            $scope[key] = angular.copy(value);
+                        }catch(e){
+
+                        }
                     });
 
                     // set outside scope from component
@@ -319,14 +328,24 @@ alt.directive('altTransclude', ['$log', function($log){
 
                     // backup original scope value from controller
                     angular.forEach(scope, function(value, key){
-                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altTransclude' && key != 'onload' && key != 'parent')
-                            scope['_'+key] = angular.copy(value);
+                        if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altTransclude' && key != 'onload' && key != 'parent') {
+                            try{
+                                scope['_' + key] = angular.copy(value);
+                            }catch(e){
+
+                            }
+                        }
                     });
 
                     // set component scope from outside
                     angular.forEach($scope[$attrs.scope], function(value, key){
-                        if(value != null && typeof value.$watch === 'undefined')
-                            scope[key] = angular.copy(value);
+                        if(value != null && typeof value.$watch === 'undefined') {
+                            try{
+                                scope[key] = angular.copy(value);
+                            }catch(e){
+
+                            }
+                        }
                     });
 
                     // apply
