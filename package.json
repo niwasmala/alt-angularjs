@@ -1,6 +1,6 @@
 {
   "name": "alt-angularjs",
-  "version": "3.1.10",
+  "version": "3.1.11",
   "description": "AltJS using Angular",
   "main": "dist/alt.js",
   "scripts": {
