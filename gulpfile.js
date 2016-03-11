@@ -20,4 +20,18 @@ gulp.task('bundle', function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', ['min', 'bundle']);
+gulp.task('min-bundle', function() {
+    return gulp.src([
+        'src/alt.js',
+        'src/alt/api.js',
+        'src/alt/auth.js',
+        'src/alt/alert.js',
+        'src/alt/route.js',
+        'src/alt/validation.js'
+    ])
+        .pipe(concat('alt.min.js'))
+        .pipe(uglify())
+        .pipe(gulp.dest('dist'));
+});
+
+gulp.task('default', ['min', 'bundle', 'min-bundle']);
