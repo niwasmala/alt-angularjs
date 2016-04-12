@@ -23,11 +23,7 @@ gulp.task('bundle', function() {
 gulp.task('min-bundle', function() {
     return gulp.src([
         'src/alt.js',
-        'src/alt/api.js',
-        'src/alt/auth.js',
-        'src/alt/alert.js',
-        'src/alt/route.js',
-        'src/alt/validation.js'
+        'src/alt/*.js'
     ])
         .pipe(concat('alt.min.js'))
         .pipe(uglify())

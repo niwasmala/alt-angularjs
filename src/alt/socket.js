@@ -1,104 +1,117 @@
-alt.socketUrl = '';
+alt.loader.socket = function(){
+    if(typeof alt.modules.socket !== 'undefined')
+        return alt.modules.socket;
 
-alt.modules.socket = angular.module('alt-socket', [])
-    .provider('socketFactory', [function () {
-        'use strict';
+    alt.socketUrl = '';
 
-        // when forwarding events, prefix the event name
-        var defaultPrefix = 'socket:',
-            ioSocket;
+    alt.modules.socket = angular.module('alt-socket', [])
+        .provider('socketFactory', [function () {
+            'use strict';
 
-        // expose to provider
-        this.$get = ['$rootScope', '$timeout', function ($rootScope, $timeout) {
+            // when forwarding events, prefix the event name
+            var defaultPrefix = 'socket:',
+                ioSocket;
 
-            var asyncAngularify = function (socket, callback) {
-                return callback ? function () {
-                    var args = arguments;
-                    $timeout(function () {
-                        callback.apply(socket, args);
-                    }, 0);
-                } : angular.noop;
-            };
+            // expose to provider
+            this.$get = ['$rootScope', '$timeout', function ($rootScope, $timeout) {
 
-            return function socketFactory (options) {
-                options = options || {};
-                var socket = options.ioSocket || io.connect();
-                var prefix = options.prefix === undefined ? defaultPrefix : options.prefix ;
-                var defaultScope = options.scope || $rootScope;
-
-                var addListener = function (eventName, callback) {
-                    socket.on(eventName, callback.__ng = asyncAngularify(socket, callback));
+                var asyncAngularify = function (socket, callback) {
+                    return callback ? function () {
+                        var args = arguments;
+                        $timeout(function () {
+                            callback.apply(socket, args);
+                        }, 0);
+                    } : angular.noop;
                 };
 
-                var addOnceListener = function (eventName, callback) {
-                    socket.once(eventName, callback.__ng = asyncAngularify(socket, callback));
-                };
+                return function socketFactory(options) {
+                    options = options || {};
+                    var socket = options.ioSocket || io.connect();
+                    var prefix = options.prefix === undefined ? defaultPrefix : options.prefix;
+                    var defaultScope = options.scope || $rootScope;
 
-                var wrappedSocket = {
-                    on: addListener,
-                    addListener: addListener,
-                    once: addOnceListener,
+                    var addListener = function (eventName, callback) {
+                        socket.on(eventName, callback.__ng = asyncAngularify(socket, callback));
+                    };
 
-                    emit: function (eventName, data, callback) {
-                        var lastIndex = arguments.length - 1;
-                        var callback = arguments[lastIndex];
-                        if(typeof callback == 'function') {
-                            callback = asyncAngularify(socket, callback);
-                            arguments[lastIndex] = callback;
-                        }
-                        return socket.emit.apply(socket, arguments);
-                    },
+                    var addOnceListener = function (eventName, callback) {
+                        socket.once(eventName, callback.__ng = asyncAngularify(socket, callback));
+                    };
 
-                    removeListener: function (ev, fn) {
-                        if (fn && fn.__ng) {
-                            arguments[1] = fn.__ng;
-                        }
-                        return socket.removeListener.apply(socket, arguments);
-                    },
+                    var wrappedSocket = {
+                        on: addListener,
+                        addListener: addListener,
+                        once: addOnceListener,
 
-                    removeAllListeners: function() {
-                        return socket.removeAllListeners.apply(socket, arguments);
-                    },
+                        emit: function (eventName, data, callback) {
+                            var lastIndex = arguments.length - 1;
+                            var callback = arguments[lastIndex];
+                            if (typeof callback == 'function') {
+                                callback = asyncAngularify(socket, callback);
+                                arguments[lastIndex] = callback;
+                            }
+                            return socket.emit.apply(socket, arguments);
+                        },
 
-                    disconnect: function (close) {
-                        return socket.disconnect(close);
-                    },
+                        removeListener: function (ev, fn) {
+                            if (fn && fn.__ng) {
+                                arguments[1] = fn.__ng;
+                            }
+                            return socket.removeListener.apply(socket, arguments);
+                        },
 
-                    connect: function() {
-                        return socket.connect();
-                    },
+                        removeAllListeners: function () {
+                            return socket.removeAllListeners.apply(socket, arguments);
+                        },
 
-                    // when socket.on('someEvent', fn (data) { ... }),
-                    // call scope.$broadcast('someEvent', data)
-                    forward: function (events, scope) {
-                        if (events instanceof Array === false) {
-                            events = [events];
-                        }
-                        if (!scope) {
-                            scope = defaultScope;
-                        }
-                        events.forEach(function (eventName) {
-                            var prefixedEvent = prefix + eventName;
-                            var forwardBroadcast = asyncAngularify(socket, function () {
-                                Array.prototype.unshift.call(arguments, prefixedEvent);
-                                scope.$broadcast.apply(scope, arguments);
+                        disconnect: function (close) {
+                            return socket.disconnect(close);
+                        },
+
+                        connect: function () {
+                            return socket.connect();
+                        },
+
+                        // when socket.on('someEvent', fn (data) { ... }),
+                        // call scope.$broadcast('someEvent', data)
+                        forward: function (events, scope) {
+                            if (events instanceof Array === false) {
+                                events = [events];
+                            }
+                            if (!scope) {
+                                scope = defaultScope;
+                            }
+                            events.forEach(function (eventName) {
+                                var prefixedEvent = prefix + eventName;
+                                var forwardBroadcast = asyncAngularify(socket, function () {
+                                    Array.prototype.unshift.call(arguments, prefixedEvent);
+                                    scope.$broadcast.apply(scope, arguments);
+                                });
+                                scope.$on('$destroy', function () {
+                                    socket.removeListener(eventName, forwardBroadcast);
+                                });
+                                socket.on(eventName, forwardBroadcast);
                             });
-                            scope.$on('$destroy', function () {
-                                socket.removeListener(eventName, forwardBroadcast);
-                            });
-                            socket.on(eventName, forwardBroadcast);
-                        });
-                    }
+                        }
+                    };
+
+                    return wrappedSocket;
                 };
+            }];
+        }])
+        .factory('$socket', ['socketFactory', function (socketFactory) {
+            return socketFactory({
+                ioSocket: io.connect(alt.socketUrl || alt.serverUrl)
+            });
+        }]);
 
-                return wrappedSocket;
-            };
-        }];
-    }])
-    .factory('$socket', ['socketFactory', function (socketFactory) {
-        return socketFactory({
-            ioSocket: io.connect(alt.socketUrl || alt.serverUrl)
-        });
-    }]);
+    alt.module('alt-socket', alt.modules.socket);
+};
 
-alt.module('alt-socket', alt.modules.socket);
+if(typeof define !== 'undefined') {
+    define([], function () {
+        alt.loader.socket();
+    });
+}else{
+    alt.loader.socket();
+}

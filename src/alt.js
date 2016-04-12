@@ -13,6 +13,9 @@ alt.componentFolder = 'component';
 // alt modules installed
 alt.modules = {};
 
+// alt module loader
+alt.loader = {};
+
 // object registry
 alt.registry = {};
 
@@ -114,12 +117,14 @@ alt.config([
 ]);
 
 // registering new dependency angular module
-alt.module = function(modulename, module){
+alt.module = function(modulename, autoreload){
+    autoreload = autoreload || false;
+
     if(alt.requires.indexOf(modulename) <= -1){
         alt.requires.push(modulename);
 
         try {
-            var moduleFn    = module || angular.module(modulename),
+            var moduleFn    = angular.module(modulename),
                 invokeQueue = moduleFn._invokeQueue,
                 runBlocks   = moduleFn._runBlocks;
 
@@ -132,17 +137,20 @@ alt.module = function(modulename, module){
             }
 
             // apply run block
+            var injector = angular.element(document.getElementsByTagName('body')[0]).injector();
             for(var j=0; j<runBlocks.length; j++){
                 var runBlock = runBlocks[j],
                     runArgs = runBlock.slice(0, runBlock.length - 1),
-                    runFn = runBlock[runBlock.length - 1],
-                    injector = angular.element(document.getElementsByTagName('body')[0]).injector();
+                    runFn = runBlock[runBlock.length - 1];
 
                 for(var k=0; k<runArgs.length; k++){
                     runArgs[k] = injector.get(runArgs[k]);
                 }
                 runFn.apply(null, runArgs);
             }
+
+            if(autoreload && injector.get('$route'))
+                injector.get('$route').reload();
         } catch (e) {
             //if (e.message) e.message += ' from ' + module;
         }
@@ -216,7 +224,7 @@ alt.directive('altComponent', ['$log', function($log){
                     }
 
                     // backup original scope value from controller
-                    angular.forEach($scope, function(value, key){
+                    /*angular.forEach($scope, function(value, key){
                         if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altComponent' && key != 'onload') {
                             try{
                                 $scope['_' + key] = angular.copy(value);
@@ -224,7 +232,7 @@ alt.directive('altComponent', ['$log', function($log){
 
                             }
                         }
-                    });
+                    });*/
 
                     // set component scope from outside
                     angular.forEach($scope.scope, function(value, key){
@@ -250,7 +258,8 @@ alt.directive('altComponent', ['$log', function($log){
 
                     // call onload after all applied
                     $timeout(function(){
-                        $scope.onload();
+                        if(typeof $scope.onload === 'function')
+                            $scope.onload();
                     });
                 });
             }, interval = function(){
@@ -327,7 +336,7 @@ alt.directive('altTransclude', ['$log', function($log){
                     }
 
                     // backup original scope value from controller
-                    angular.forEach(scope, function(value, key){
+                    /*angular.forEach(scope, function(value, key){
                         if(key.substr(0, 1) !== '$' && key != 'scope' && key != 'altTransclude' && key != 'onload' && key != 'parent') {
                             try{
                                 scope['_' + key] = angular.copy(value);
@@ -335,7 +344,7 @@ alt.directive('altTransclude', ['$log', function($log){
 
                             }
                         }
-                    });
+                    });*/
 
                     // set component scope from outside
                     angular.forEach($scope[$attrs.scope], function(value, key){
@@ -355,7 +364,8 @@ alt.directive('altTransclude', ['$log', function($log){
 
                     // call onload after all applied
                     $timeout(function(){
-                        scope.onload();
+                        if(typeof scope.onload === 'function')
+                            scope.onload();
                     });
                 });
             }, interval = function(){
@@ -399,6 +409,12 @@ alt.run([
         $rootScope.alt = alt;
     }
 ]);
+
+// set compile provider
+alt.config(['$compileProvider', function($compileProvider){
+    $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/);
+}]);
 
 // set to global window object
 window.alt = alt;
