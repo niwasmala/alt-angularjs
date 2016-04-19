@@ -3,7 +3,7 @@ var alt = angular.module('Alt', []);
 // environment
 alt.application = 'alt';
 alt.environment = 'production';
-alt.version = '2.0.0';
+alt.version = '1.0.0';
 alt.urlArgs = '';
 alt.urlArgs = alt.environment == 'production' ? '_v=' + alt.version : '_t=' + (+new Date());
 alt.theme = '';
