@@ -3,14 +3,15 @@ alt.loader.loading = function(){
         return;
 
     alt.modules.loading = angular.module('alt-loading', [])
-        .factory('$loading', ['$log', '$rootScope', '$q',  function($log, $rootScope, $q) {
+        .factory('$loading', ['$log', '$rootScope', function($log, $rootScope) {
             return {
-                deferred: null,
                 show: function(){
-                    $rootScope.$loading.isshow = true;
+                    $rootScope.$loading.counter++;
+                    $rootScope.$loading.isshow = $rootScope.$loading.counter > 0;
                 },
                 close: function(){
-                    $rootScope.$loading.isshow = false;
+                    $rootScope.$loading.counter--;
+                    $rootScope.$loading.isshow = $rootScope.$loading.counter > 0;
                 }
             };
         }])
