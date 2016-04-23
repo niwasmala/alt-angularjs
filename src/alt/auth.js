@@ -3,21 +3,21 @@ alt.loader.auth = function(){
         return alt.modules.auth;
 
     alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
-        .factory('$auth', ['$log', '$window', 'jwtHelper', function ($log, $window, jwtHelper) {
+        .factory('$auth', ['$log', '$window', '$store', 'jwtHelper', function ($log, $window, $store, jwtHelper) {
             // set default local data
-            store.set(alt.application + '_token', store.get(alt.application + '_token') || '');
-            store.set(alt.application + '_userdata', store.get(alt.application + '_userdata') || {});
+            $store.set('token', $store.get('token') || '');
+            $store.set('userdata', $store.get('userdata') || {});
 
             return {
                 token: '',
                 userdata: {},
                 set_token: function (token) {
                     this.token = token;
-                    store.set(alt.application + '_token', this.token);
+                    $store.set('token', this.token);
                 },
                 set_userdata: function (userdata) {
                     this.userdata = userdata;
-                    store.set(alt.application + '_userdata', this.userdata);
+                    $store.set('userdata', this.userdata);
                 },
                 login: function (data) {
                     // data can be a string token or object userdata
@@ -32,10 +32,10 @@ alt.loader.auth = function(){
                 logout: function () {
                     this.token = '';
                     this.userdata = {};
-                    store.set(alt.application + '_token', '');
-                    store.set(alt.application + '_userdata', {});
-                    store.set(alt.application + '_filter', '');
-                    store.set(alt.application + '_sorting', '');
+                    $store.set('token', '');
+                    $store.set('userdata', {});
+                    $store.set('filter', '');
+                    $store.set('sorting', '');
                 },
                 islogin: function () {
                     return this.token != '' ? !jwtHelper.isTokenExpired(this.token) : Object.keys(this.userdata).length > 0;
@@ -69,13 +69,13 @@ alt.loader.auth = function(){
             $httpProvider.interceptors.reverse().push('authHttpInterceptor');
             $httpProvider.interceptors.reverse();
         }])
-        .run(['$rootScope', '$auth', '$log', function ($rootScope, $auth, $log) {
+        .run(['$rootScope', '$auth', '$log', '$store', function ($rootScope, $auth, $log, $store) {
             $rootScope.$auth = $auth;
 
-            if(store.get(alt.application + '_token') != '')
-                $auth.login(store.get(alt.application + '_token'));
-            if(store.get(alt.application + '_userdata') != '')
-                $auth.login(store.get(alt.application + '_userdata'));
+            if($store.get('token') != '')
+                $auth.login($store.get('token'));
+            if($store.get('userdata') != '')
+                $auth.login($store.get('userdata'));
         }]);
 
     alt.module('alt-auth', alt.modules.auth);

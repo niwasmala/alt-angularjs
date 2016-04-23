@@ -21,6 +21,20 @@
     "test",
     "tests"
   ],
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "accounting": "^0.3.2",
+    "moment": "^2.13.0",
+    "cryptojslib": "^3.1.2",
+    "angular": "^1.5.5",
+    "angular-route": "^1.5.5",
+    "a0-angular-storage": "^0.0.15",
+    "angular-cookies": "^1.5.5",
+    "angular-jwt": "^0.0.9"
+  },
+  "resolutions": {
+    "angular-cookies": "^1.5.5",
+    "angular": "^1.5.5",
+    "angular-route": "^1.5.5"
   }
 }

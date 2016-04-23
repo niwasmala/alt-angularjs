@@ -394,6 +394,24 @@ alt.loader.button = function(){
             'class': 'btn btn-primary',
             'disabled': false
         },
+        'map': {
+            'title': 'Peta',
+            'description': 'Peta',
+            'onclick': angular.noop,
+            'href': '',
+            'icon': 'fa fa-map-marker',
+            'class': 'btn btn-primary',
+            'disabled': false
+        },
+        'history': {
+            'title': 'History',
+            'description': 'History',
+            'onclick': angular.noop,
+            'href': '',
+            'icon': 'fa fa-history',
+            'class': 'btn btn-primary',
+            'disabled': false
+        },
         '': {
             'title': '',
             'description': '',

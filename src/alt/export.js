@@ -23,7 +23,7 @@ alt.loader.export = function(){
                 },
                 print: function (html, css) {
                     html = html || '';
-                    css = css || '<link type="text/css" rel="stylesheet" media="all" href="asset/lib/bootstrap2.3.2/bootstrap/css/bootstrap.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/bootstrap-responsive.min.css"/><link type="text/css" rel="stylesheet" media="all" href="asset/css/style.css"/>';
+                    css = css || '';
                     var win = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
                     win.document.write(css);
                     win.document.write(html);
