@@ -20,20 +20,29 @@ gulp.task('concat', function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('bundle', function() {
+gulp.task('library', function() {
     return gulp.src([
             'bower_components/angular/angular.min.js',
             'bower_components/angular-route/angular-route.min.js',
-            'bower_components/angular-cookies/dist/angular-cookies.min.js',
+            'bower_components/angular-cookies/angular-cookies.min.js',
             'bower_components/angular-jwt/dist/angular-jwt.min.js',
             'bower_components/a0-angular-storage/dist/angular-storage.min.js',
             'bower_components/cryptojslib/rollups/aes.js',
             'bower_components/moment/min/moment-with-locales.min.js',
-            'src/**/*.js'
+            'bower_components/accounting/accounting.min.js'
         ])
-        .pipe(concat('alt.bundle.js'))
+        .pipe(concat('alt.lib.js'))
         .pipe(uglify())
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', ['min', 'concat', 'bundle']);
+gulp.task('bundle', ['concat', 'library'], function() {
+    return gulp.src([
+            'dist/alt.lib.js',
+            'dist/alt.min.js'
+        ])
+        .pipe(concat('alt.bundle.js'))
+        .pipe(gulp.dest('dist'));
+});
+
+gulp.task('default', ['min', 'concat', 'library', 'bundle']);

@@ -6,12 +6,12 @@ alt.loader.menu = function(){
     alt.menuFolder = alt.menuFolder || 'menu';
 
     alt.modules.menu = angular.module('alt-menu', [])
-        .run(['$rootScope', function ($rootScope) {
+        .run(['$rootScope', '$store', function ($rootScope, $store) {
             // menu
-            $rootScope.menu = store.get(alt.application + '_menu') || {'submenu': ''};
+            $rootScope.menu = $store.get('menu') || {'submenu': ''};
             $rootScope.$watch('menu', function (newvalue, oldvalue) {
                 if (newvalue != oldvalue) {
-                    store.set(alt.application + '_menu', newvalue);
+                    $store.set('menu', newvalue);
                     $rootScope.menu = newvalue;
                 }
             }, true);

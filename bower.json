@@ -1,6 +1,6 @@
 {
   "name": "alt-angularjs",
-  "version": "5.0.8",
+  "version": "5.0.9",
   "homepage": "https://github.com/niwasmala/alt-angularjs",
   "authors": [
     "Nicky Irawan <niwasmala@gmail.com>"
@@ -30,7 +30,9 @@
     "angular-route": "^1.5.5",
     "a0-angular-storage": "^0.0.15",
     "angular-cookies": "^1.5.5",
-    "angular-jwt": "^0.0.9"
+    "angular-jwt": "^0.0.9",
+    "requirejs": "^2.2.0",
+    "requirejs-plugins": "^1.0.3"
   },
   "resolutions": {
     "angular-cookies": "^1.5.5",

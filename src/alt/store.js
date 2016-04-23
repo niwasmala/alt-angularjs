@@ -2,7 +2,7 @@ alt.loader.store = function(){
     if(typeof alt.modules.store !== 'undefined')
         return alt.modules.store;
 
-    alt.modules.store = angular.module('alt-store', ['angular-store', 'ngCookies'])
+    alt.modules.store = angular.module('alt-store', ['angular-storage', 'ngCookies'])
         .factory('$store', ['$log', 'store', function ($log, store) {
             return store.getNamespacedStore(alt.application);
         }])
