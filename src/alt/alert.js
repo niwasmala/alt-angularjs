@@ -30,7 +30,14 @@ alt.loader.alert = function(){
                             isshow: skip == 0,
                             hide: function(){
                                 this.isshow = false;
-                                self.items.splice(self.items.indexOf(this), 1);
+                                var index = self.items.indexOf(this),
+                                    items = [];
+
+                                angular.forEach(self.items, function(val, key){
+                                    if(key != index) items.push(val);
+                                });
+                                
+                                self.items = items;
                             },
                             onload: function(){
                                 var scope = this;
