@@ -70,6 +70,7 @@ alt.loader.popup = function(){
                     });
                     $rootScope.$popup.type = true;
                     $rootScope.$popup.isshow = true;
+                    $rootScope.$popup.response = {status: 200, data: ""};
                     $rootScope.$popup.showinput = type == 'prompt';
 
                     return this.deferred.promise;

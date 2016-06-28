@@ -397,8 +397,8 @@ alt.factory('$uuid', function() {
 
 // on running application
 alt.run([
-    '$rootScope', '$q', '$log',
-    function($rootScope, $q, $log){
+    '$rootScope', '$q', '$log', '$route',
+    function($rootScope, $q, $log, $route){
         $rootScope.defaultRouteChanged  = function(){
             var deferred = $q.defer();
             deferred.resolve();
@@ -407,13 +407,16 @@ alt.run([
         $rootScope.onRouteChanged = $rootScope.defaultRouteChanged;
 
         $rootScope.alt = alt;
+        $rootScope.reload = function(){
+            $route.reload();
+        };
     }
 ]);
 
 // set compile provider
 alt.config(['$compileProvider', function($compileProvider){
-    $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
-    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension):/);
+    $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|file|ftp|mailto|chrome-extension|tel):/);
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|file|ftp|mailto|chrome-extension|tel):/);
 }]);
 
 // set to global window object

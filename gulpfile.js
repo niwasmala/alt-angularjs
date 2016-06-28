@@ -22,6 +22,7 @@ gulp.task('concat', function() {
 
 gulp.task('library', function() {
     return gulp.src([
+            'bower_components/lovefield/dist/lovefield.min.js',
             'bower_components/angular/angular.min.js',
             'bower_components/angular-route/angular-route.min.js',
             'bower_components/angular-cookies/angular-cookies.min.js',
