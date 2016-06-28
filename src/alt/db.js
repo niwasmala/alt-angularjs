@@ -3,7 +3,7 @@ alt.loader.db = function(){
         return alt.modules.db;
 
     alt.modules.db = angular.module('alt-db', [])
-        .factory("$db", ["$log", "$q", "$api", "$interval", function($log, $q, $api, $interval){
+        .factory("$db", ["$log", "$q", "$api", "$interval", "$auth", function($log, $q, $api, $interval, $auth){
             var $db = function(url, schema){
                 var res = {lf: lf};
                 $db.connection = null;
@@ -321,6 +321,11 @@ alt.loader.db = function(){
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
+                        if(typeof res.schema.fields.entrytime !== "undefined")
+                            data.entrytime = new Date();
+                        if(typeof res.schema.fields.entryuser !== "undefined")
+                            data.entryuser = $auth.userdata.username;
+
                         var table = $db.connection.getSchema().table(res.tablename),
                             row = table.createRow(data);
 
@@ -339,6 +344,11 @@ alt.loader.db = function(){
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
+                        if(typeof res.schema.fields.modifiedtime !== "undefined")
+                            data.modifiedtime = new Date();
+                        if(typeof res.schema.fields.modifieduser !== "undefined")
+                            data.modifieduser = $auth.userdata.username;
+
                         var table = $db.connection.getSchema().table(res.tablename),
                             parser = res.parser({where: data.where || ""}, table),
                             query;
@@ -372,7 +382,7 @@ alt.loader.db = function(){
                     data = data || {};
                     data.limit = 1;
                     if(data[res.schema.pkey])
-                        data[res.schema.pkey] = "= " + data[res.schema.pkey];
+                        data[res.schema.pkey] = (data[res.schema.pkey] + "").indexOf("=") == 0 ? data[res.schema.pkey] : "= " + data[res.schema.pkey];
 
                     var deferred = $q.defer();
 
@@ -391,15 +401,26 @@ alt.loader.db = function(){
 
                 res.remove = function(data){
                     data = data || {};
+
+                    if(data[res.schema.pkey])
+                        data[res.schema.pkey] = (data[res.schema.pkey] + "").indexOf("=") == 0 ? data[res.schema.pkey] : "= " + data[res.schema.pkey];
+
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
+                        if(typeof res.schema.fields.deletedtime !== "undefined")
+                            data.deletedtime = new Date();
+                        if(typeof res.schema.fields.deleteduser !== "undefined")
+                            data.deleteduser = $auth.userdata.username;
+                        if(typeof res.schema.fields.isdeleted !== "undefined")
+                            data.isdeleted = true;
+
                         var table = $db.connection.getSchema().table(res.tablename),
-                            parser = res.parser({where: data.where || ""}, table),
+                            parser = res.parser(data, table),
                             query;
 
                         // select
-                        query = $db.connection.delete().from(table);
+                        query = res.schema.fields.isdeleted ? $db.connection.update(table) : $db.connection.delete().from(table);
 
                         if(parser.where){
                             query.where(parser.where);
