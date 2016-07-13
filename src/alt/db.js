@@ -3,7 +3,7 @@ alt.loader.db = function(){
         return alt.modules.db;
 
     alt.modules.db = angular.module('alt-db', [])
-        .factory("$db", ["$log", "$q", "$api", "$interval", "$auth", function($log, $q, $api, $interval, $auth){
+        .factory("$db", ["$log", "$q", "$api", "$interval", "$auth", "$uuid", function($log, $q, $api, $interval, $auth, $uuid){
             var $db = function(url, schema){
                 var res = {lf: lf};
                 $db.connection = null;
@@ -23,10 +23,8 @@ alt.loader.db = function(){
                 });
 
                 // set pkey
-                if(res.schema.pkey) {
-                    res.schema.pkey = typeof res.schema.pkey === "object" ? res.schema.pkey : [res.schema.pkey];
-                    table.addPrimaryKey(res.schema.pkey, res.schema.autoinc);
-                }
+                if(res.schema.pkey)
+                    table.addPrimaryKey(typeof res.schema.pkey === "object" ? res.schema.pkey : [res.schema.pkey], res.schema.autoinc);
 
                 // set index
                 res.schema.index = res.schema.index || [];
@@ -35,8 +33,8 @@ alt.loader.db = function(){
                 });
 
                 // function needed
-                res.parser = function(data, table){
-                    data = data || {};
+                res.parser = function(param, table){
+                    var data = angular.copy(param || {});
                     var res = {
                         fields: [],
                         where: [],
@@ -149,7 +147,7 @@ alt.loader.db = function(){
                                 angular.forEach(tmp, function(val, key){
                                     var tmp2 = (val + "").split(" "),
                                         field = val[0],
-                                        sort = val[1].toLowerCase();
+                                        sort = (val[1] + "").toLowerCase();
 
                                     if(table[field]){
                                         res.order.push([table[field], sort == "desc" ? lf.Order.DESC : lf.Order.ASC]);
@@ -223,8 +221,8 @@ alt.loader.db = function(){
                     return res;
                 };
 
-                res.count = function(data){
-                    data = data || {};
+                res.count = function(param){
+                    var data = angular.copy(param || {});
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
@@ -248,8 +246,11 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.list = function(data){
-                    data = data || {};
+                res.list = function(param){
+                    var data = angular.copy(param || {});
+                    if(typeof res.schema.fields.isdeleted !== "undefined")
+                        data.isdeleted = data.isdeleted || false;
+
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
@@ -280,8 +281,8 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.keyvalues = function(data){
-                    data = data || {};
+                res.keyvalues = function(param){
+                    var data = angular.copy(param || {});
                     var deferred = $q.defer(),
                         result = {status: 200, data: {}};
 
@@ -298,8 +299,8 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.table = function(data){
-                    data = data || {};
+                res.table = function(param){
+                    var data = angular.copy(param || {});
                     var deferred = $q.defer(),
                         result = {status: 200, data: {}};
 
@@ -316,11 +317,16 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.insert = function(data){
-                    data = data || {};
+                res.insert = function(param){
+                    var data = angular.copy(param || {});
+
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
+                        if(typeof res.schema.pkey !== "undefined" && !res.schema.autoinc && typeof data[res.schema.pkey] === "undefined")
+                            data[res.schema.pkey] = $uuid.create();
+                        if(typeof res.schema.fields.isdeleted !== "undefined" && typeof data.isdeleted === "undefined")
+                            data.isdeleted = false;
                         if(typeof res.schema.fields.entrytime !== "undefined")
                             data.entrytime = new Date();
                         if(typeof res.schema.fields.entryuser !== "undefined")
@@ -339,8 +345,8 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.update = function(data){
-                    data = data || {};
+                res.update = function(param){
+                    var data = angular.copy(param || {});
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
@@ -378,8 +384,8 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.retrieve = function(data){
-                    data = data || {};
+                res.retrieve = function(param){
+                    var data = angular.copy(param || {});
                     data.limit = 1;
                     if(data[res.schema.pkey])
                         data[res.schema.pkey] = (data[res.schema.pkey] + "").indexOf("=") == 0 ? data[res.schema.pkey] : "= " + data[res.schema.pkey];
@@ -399,15 +405,19 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.remove = function(data){
-                    data = data || {};
+                res.remove = function(param){
+                    var data = angular.copy(param || {});
 
-                    if(data[res.schema.pkey])
+                    if(typeof res.schema.pkey !== "undefined" && typeof data[res.schema.pkey] !== "undefined")
                         data[res.schema.pkey] = (data[res.schema.pkey] + "").indexOf("=") == 0 ? data[res.schema.pkey] : "= " + data[res.schema.pkey];
 
                     var deferred = $q.defer();
 
                     $db.connect().then(function(){
+                        var table = $db.connection.getSchema().table(res.tablename),
+                            parser = res.parser(data, table),
+                            query;
+
                         if(typeof res.schema.fields.deletedtime !== "undefined")
                             data.deletedtime = new Date();
                         if(typeof res.schema.fields.deleteduser !== "undefined")
@@ -415,11 +425,7 @@ alt.loader.db = function(){
                         if(typeof res.schema.fields.isdeleted !== "undefined")
                             data.isdeleted = true;
 
-                        var table = $db.connection.getSchema().table(res.tablename),
-                            parser = res.parser(data, table),
-                            query;
-
-                        // select
+                        // delete or update
                         query = res.schema.fields.isdeleted ? $db.connection.update(table) : $db.connection.delete().from(table);
 
                         if(parser.where){
@@ -438,8 +444,8 @@ alt.loader.db = function(){
                     return deferred.promise;
                 };
 
-                res.isexist = function(data){
-                    data = data || {};
+                res.isexist = function(param){
+                    var data = angular.copy(param || {});
                     var deferred = $q.defer();
 
                     res.count(data).then(function(response){
@@ -501,8 +507,8 @@ alt.loader.db = function(){
             return $db;
         }]);
 
-    alt.module('alt-db', alt.modules.db);
 
+    alt.module('alt-db', alt.modules.db);
 };
 
 if(typeof define !== 'undefined') {

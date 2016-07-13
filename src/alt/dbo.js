@@ -8,6 +8,7 @@ alt.loader.dbo = function(){
                 var res = {};
 
                 // api and database
+                res.schema = schema;
                 res.db = $db(url, schema);
                 res.api = $api(url, schema.pkey, {
                     connect: function(params){
@@ -32,6 +33,10 @@ alt.loader.dbo = function(){
                 });
 
                 // function needed
+                res.quote = function(data){
+                    return "'" + data + "'";
+                };
+
                 res.count = function(data){
                     return alt.serverUrl ? res.api.count(data) : res.db.count(data);
                 };
@@ -88,7 +93,6 @@ alt.loader.dbo = function(){
         }]);
 
     alt.module('alt-dbo', alt.modules.dbo);
-
 };
 
 if(typeof define !== 'undefined') {

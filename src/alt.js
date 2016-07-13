@@ -178,8 +178,12 @@ alt.directive('altComponent', ['$log', function($log){
         controller: ['$scope', '$timeout', '$interval', '$attrs', '$element', function($scope, $timeout, $interval, $attrs, $element){
             // wait until $scope.scope is defined
             var load = function() {
+                $scope._onload = $scope._onload || function(){ return angular.noop; };
+                $scope._onload = $scope._onload();
+
                 $scope.onload = $scope.onload || function(){ return angular.noop; };
                 $scope.onload = $scope.onload();
+
                 $scope.alt = alt;
 
                 var location = alt.componentFolder +'/' + $scope.altComponent + '/',
@@ -237,6 +241,10 @@ alt.directive('altComponent', ['$log', function($log){
                     // set component scope from outside
                     angular.forEach($scope.scope, function(value, key){
                         try{
+                            // backup original scope value from controller
+                            if(typeof $scope[key] !== "undefined")
+                                $scope["_" + key] = $scope[key];
+
                             $scope[key] = angular.copy(value);
                         }catch(e){
 
@@ -258,6 +266,9 @@ alt.directive('altComponent', ['$log', function($log){
 
                     // call onload after all applied
                     $timeout(function(){
+                        if(typeof $scope._onload === 'function')
+                            $scope._onload()
+
                         if(typeof $scope.onload === 'function')
                             $scope.onload();
                     });
