@@ -45,7 +45,7 @@ alt.loader.auth = function(){
 
                     return permission == 0 ? this.islogin() : this.islogin() && typeof level !== 'undefined' && ((parseInt(level) & parseInt(permission)) > 0);
                 },
-                set_permission: function (permission, redirect, level) {
+                set_permission: function (permission, level, redirect) {
                     level = level || this.userdata.userlevel;
 
                     redirect = typeof redirect !== 'undefined' ? redirect : true;
