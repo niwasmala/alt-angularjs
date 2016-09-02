@@ -40,12 +40,16 @@ alt.loader.auth = function(){
                 islogin: function () {
                     return this.token != '' ? !jwtHelper.isTokenExpired(this.token) : Object.keys(this.userdata).length > 0;
                 },
-                check: function (level) {
-                    return level == 0 ? this.islogin() : this.islogin() && typeof this.userdata.userlevel !== 'undefined' && ((parseInt(this.userdata.userlevel) & parseInt(level)) > 0);
+                check: function (permission, level) {
+                    level = level || this.userdata.userlevel;
+
+                    return permission == 0 ? this.islogin() : this.islogin() && typeof level !== 'undefined' && ((parseInt(level) & parseInt(permission)) > 0);
                 },
-                set_permission: function (level, redirect) {
+                set_permission: function (permission, redirect, level) {
+                    level = level || this.userdata.userlevel;
+
                     redirect = typeof redirect !== 'undefined' ? redirect : true;
-                    if (!this.check(level)) {
+                    if (!this.check(permission, level)) {
                         if (redirect) {
                             $window.location.href = alt.baseUrl + 'error?code=403';
                         }
