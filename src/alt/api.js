@@ -1,9 +1,15 @@
 alt.loader.api = function(){
     if(typeof alt.modules.api !== 'undefined')
         return alt.modules.api;
-    
+
+    alt.api = {
+        isenabled: true
+    };
     alt.modules.api = angular.module('alt-api', [])
         .config(['$provide', '$httpProvider', function ($provide, $httpProvider) {
+            // we can disabled api configuration
+            if(!alt.api.isenabled) return;
+
             // we will be using common request content-type, not using default application/json from angular
             $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
             var transformRequest = null;
@@ -11,6 +17,7 @@ alt.loader.api = function(){
             $provide.factory('httpInterceptor', ['$log', '$q', '$window', function ($log, $q, $window) {
                 return {
                     request: function (config) {
+                        if(!alt.api.isenabled) return config;
                         transformRequest = transformRequest || config.transformRequest;
 
                         if (config.headers['Content-Type']) {
@@ -98,6 +105,8 @@ alt.loader.api = function(){
                         return config;
                     },
                     response: function (response) {
+                        if(!alt.api.isenabled) return response;
+
                         var res = {};
                         try {
                             res = angular.copy(response);

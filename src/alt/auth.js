@@ -2,6 +2,9 @@ alt.loader.auth = function(){
     if(typeof alt.modules.auth !== 'undefined')
         return alt.modules.auth;
 
+    alt.auth = {
+        isenabled: true
+    };
     alt.modules.auth = angular.module('alt-auth', ['angular-jwt'])
         .factory('$auth', ['$log', '$window', '$store', 'jwtHelper', function ($log, $window, $store, jwtHelper) {
             // set default local data
@@ -63,6 +66,7 @@ alt.loader.auth = function(){
             $provide.factory('authHttpInterceptor', ['$auth', '$log', '$q', '$window', function ($auth, $log, $q, $window) {
                 return {
                     request: function (config) {
+                        if(!alt.auth.isenabled) return config;
                         if ($auth.token) config.headers['Authorization'] = 'Bearer ' + $auth.token;
                         
                         return config;
