@@ -31,20 +31,15 @@ alt.loader.api = function(){
                                         switch (typeof value) {
                                             case "string":
                                             case "number":
+                                            case "boolean":
                                                 return key + "=" + encodeURIComponent(value);
                                                 break;
                                             case "object":
-                                                tmp = [];
-                                                for (var i in value) if (value.hasOwnProperty(i)) if (i != '$$hashKey') {
-                                                    tmp.push(transform(key + "[" + i + "]", value[i]));
-                                                }
-                                                return tmp.join("&");
-                                                break;
                                             case "array":
                                                 tmp = [];
-                                                for (var i = 0; i < value.length; i++) {
-                                                    tmp.push(transform(key + "[" + i + "]", value[i]));
-                                                }
+                                                angular.forEach(value, function(v, k){
+                                                    tmp.push(transform(key + "[" + k + "]", v));
+                                                });
                                                 return tmp.join("&");
                                                 break;
                                             default:
@@ -113,7 +108,6 @@ alt.loader.api = function(){
                         } catch (e) {
 
                         }
-
 
                         if (typeof response.data === 'object') {
                             response.data = response.data || {};
