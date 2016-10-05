@@ -62,6 +62,7 @@ alt.loader.api = function(){
                                             switch (typeof value) {
                                                 case "string":
                                                 case "number":
+                                                case "boolean":
                                                     fd.append(key, value);
                                                     break;
                                                 case "object":
@@ -70,15 +71,18 @@ alt.loader.api = function(){
                                                     } else if (typeof File === 'undefined' && typeof value.name !== 'undefined') {
                                                         fd.append(key, value);
                                                     } else {
+                                                        angular.forEach(value, function(v, k){
+                                                            transform(fd, key + "[" + k + "]", v);
+                                                        });
                                                         for (var i in value) if (value.hasOwnProperty(i)) if (i != '$$hashKey') {
-                                                            transform(fd, key + "[" + i + "]", value[i]);
+
                                                         }
                                                     }
                                                     break;
                                                 case "array":
-                                                    for (var i = 0; i < value.length; i++) {
-                                                        transform(fd, key + "[" + i + "]", value[i]);
-                                                    }
+                                                    angular.forEach(value, function(v, k){
+                                                        transform(fd, key + "[" + k + "]", v);
+                                                    });
                                                     break;
                                                 default:
                                                     break;
